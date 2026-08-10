@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}{{ sim.title }}{% endblock %}
+{% block page_title %}{{ sim.title }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="fas fa-flask me-2 text-primary"></i>{{ sim.title }}</span>
+        <span class="badge bg-success"><i class="fas fa-shield me-1"></i>Safe Simulation</span>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-4">{{ sim.description }}</p>
+
+        <!-- Steps -->
+        <div id="stepContainer">
+          {% for step in sim.steps %}
+          <div class="step-panel mb-4" id="step{{ loop.index }}" {% if not loop.first %}style="display:none"{% endif %}>
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="stat-icon bg-primary bg-opacity-10" style="width:40px;height:40px;font-size:1rem;font-weight:700;color:var(--accent-primary)">
+                {{ loop.index }}
+              </div>
+              <h5 class="mb-0">{{ step.title }}</h5>
+            </div>
+            <div class="code-block mb-3">{{ step.code }}</div>
+            <div class="alert" style="background:rgba(79,142,247,0.08);border-color:rgba(79,142,247,0.2)">
+              <i class="fas fa-lightbulb me-2 text-primary"></i>{{ step.explanation }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Navigation -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <button class="btn btn-outline-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>
+            <i class="fas fa-arrow-left me-2"></i>Previous
+          </button>
+          <span id="stepIndicator" class="text-muted small">Step 1 / {{ sim.steps | length }}</span>
+          <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">
+            Next<i class="fas fa-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <!-- Educational Note -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-graduation-cap me-2 text-success"></i>Learning Objective</div>
+      <div class="card-body">
+        <p class="small text-muted mb-3">This simulation helps you understand how this attack works so you can defend against it.</p>
+        <h6>Key Takeaways:</h6>
+        <ul class="small text-muted ps-3">
+          <li>Understanding the attack mechanism</li>
+          <li>Identifying vulnerabilities</li>
+          <li>Implementing proper defenses</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-list me-2 text-primary"></i>Steps</div>
+      <div class="card-body p-0">
+        {% for step in sim.steps %}
+        <div class="check-item px-4 step-nav" data-step="{{ loop.index }}" onclick="goToStep({{ loop.index }})"
+          style="padding:12px 16px;cursor:pointer" id="nav{{ loop.index }}">
+          <i class="fas fa-circle nav-icon" style="font-size:0.5rem;color:var(--accent-{% if loop.first %}primary{% else %}muted{% endif %})"></i>
+          <span class="small">{{ step.title }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStep = 1;
+const totalSteps = {{ sim.steps | length }};
+
+function changeStep(dir) {
+  goToStep(currentStep + dir);
+}
+
+function goToStep(step) {
+  if (step < 1 || step > totalSteps) return;
+  document.getElementById('step' + currentStep).style.display = 'none';
+  document.getElementById('nav' + currentStep).querySelector('i').style.color = 'var(--text-muted)';
+
+  currentStep = step;
+  const el = document.getElementById('step' + currentStep);
+  el.style.display = 'block';
+  el.classList.add('fade-in-up');
+  document.getElementById('nav' + currentStep).querySelector('i').style.color = 'var(--accent-primary)';
+
+  document.getElementById('prevBtn').disabled = currentStep === 1;
+  document.getElementById('nextBtn').disabled = currentStep === totalSteps;
+  document.getElementById('stepIndicator').textContent = `Step ${currentStep} / ${totalSteps}`;
+}
+</script>
+{% endblock %}

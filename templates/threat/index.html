@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block title %}Threat Intelligence{% endblock %}
+{% block page_title %}Threat Intelligence Dashboard{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-xl-8">
+    <!-- Recent Threats -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-radiation me-2 text-danger"></i>Recent Threats</span>
+        <a href="{{ url_for('threat.search') }}" class="btn btn-sm btn-outline-primary">Search Threats</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Name</th><th>Category</th><th>Severity</th><th>MITRE</th><th>Action</th></tr></thead>
+            <tbody>
+              {% for threat in recent_threats %}
+              <tr>
+                <td class="fw-semibold small">{{ threat.name }}</td>
+                <td><span class="badge bg-secondary">{{ threat.category.name if threat.category else '-' }}</span></td>
+                <td>
+                  <span class="badge {% if threat.severity == 'critical' %}bg-danger{% elif threat.severity == 'high' %}bg-warning text-dark{% elif threat.severity == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                    {{ threat.severity or 'unknown' }}
+                  </span>
+                </td>
+                <td><code class="small">{{ threat.mitre_technique or '-' }}</code></td>
+                <td>
+                  <a href="{{ url_for('threat.explain', threat_type=threat.name) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-info-circle"></i>
+                  </a>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="text-center text-muted py-4">No threats in database yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MITRE ATT&CK -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-sitemap me-2 text-primary"></i>MITRE ATT&CK Framework</div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% for tactic in mitre_tactics %}
+          <div class="col-md-6">
+            <div class="card" style="border-color:rgba(79,142,247,0.2)">
+              <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="fw-bold mb-0 small">{{ tactic.name }}</h6>
+                  <code class="small text-muted">{{ tactic.id }}</code>
+                </div>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for tech in tactic.techniques %}
+                  <span class="badge" style="background:rgba(79,142,247,0.1);color:var(--text-secondary);font-size:0.65rem">{{ tech }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <!-- Threat Categories -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-tags me-2 text-warning"></i>Threat Categories</div>
+      <div class="card-body p-0">
+        {% for cat in categories %}
+        <button type="button"
+          class="check-item px-4 w-100 border-0 bg-transparent text-start category-btn"
+          style="padding:12px 16px;display:flex;align-items:center;cursor:pointer"
+          data-category="{{ cat.name }}">
+          <i class="fas {{ cat.icon }} nav-icon" style="color:{{ cat.color }}"></i>
+          <span class="small">{{ cat.name }}</span>
+          <span class="ms-auto badge bg-secondary">{{ cat.threats.count() }}</span>
+        </button>
+        {% else %}
+        {% for name, icon, color in [
+          ('Phishing',   'fa-fish',          '#ffa502'),
+          ('Malware',    'fa-bug',           '#ff4757'),
+          ('Ransomware', 'fa-lock',          '#a55eea'),
+          ('DDoS',       'fa-server',        '#17a2b8'),
+          ('Social Eng', 'fa-user-secret',   '#2ed573'),
+          ('Zero-Day',   'fa-radiation',     '#ff4757')
+        ] %}
+        <button type="button"
+          class="check-item px-4 w-100 border-0 bg-transparent text-start category-btn"
+          style="padding:12px 16px;display:flex;align-items:center;cursor:pointer"
+          data-category="{{ name }}">
+          <i class="fas {{ icon }} nav-icon" style="color:{{ color }}"></i>
+          <span class="small">{{ name }}</span>
+        </button>
+        {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Category Threats Panel -->
+    <div class="card mb-4" id="categoryPanel" style="display:none">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list me-2 text-primary"></i><span id="categoryTitle">Threats</span></span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('categoryPanel').style.display='none'">✕</button>
+      </div>
+      <div class="card-body p-2" id="categoryBody">
+        <div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+      </div>
+    </div>
+
+    <!-- IOC Quick Check -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-fingerprint me-2 text-danger"></i>IOC Quick Lookup</div>
+      <div class="card-body">
+        <div class="input-group mb-2">
+          <input type="text" id="iocValue" class="form-control" placeholder="IP, domain, hash, URL...">
+          <button class="btn btn-danger" onclick="checkIOC()"><i class="fas fa-search"></i></button>
+        </div>
+        <div id="iocResult"></div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-link me-2 text-info"></i>Intel Resources</div>
+      <div class="card-body p-0">
+        {% for icon, label, url in [
+          ('fa-database', 'Browse IOC Database', '/threat/ioc'),
+          ('fa-sitemap', 'MITRE ATT&CK Map', '/threat/mitre'),
+          ('fa-search', 'Search Threats', '/threat/search'),
+        ] %}
+        <a href="{{ url }}" class="check-item px-4 text-decoration-none" style="padding:12px 16px;display:flex">
+          <i class="fas {{ icon }} text-info nav-icon"></i>
+          <span class="small">{{ label }}</span>
+          <i class="fas fa-arrow-right ms-auto text-muted" style="font-size:0.7rem"></i>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Category filter buttons
+document.querySelectorAll('.category-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const cat = btn.dataset.category;
+    document.getElementById('categoryTitle').textContent = cat + ' Threats';
+    const panel = document.getElementById('categoryPanel');
+    const body  = document.getElementById('categoryBody');
+    panel.style.display = 'block';
+    body.innerHTML = '<div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    try {
+      const res  = await fetch(`/threat/api/threats?category=${encodeURIComponent(cat)}`);
+      const data = await res.json();
+      if (!data.length) {
+        body.innerHTML = `<p class="text-muted small text-center py-3">No threats found for "${cat}".<br><a href="/threat/explain/${encodeURIComponent(cat.toLowerCase())}" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-info-circle me-1"></i>Learn about ${cat}</a></p>`;
+        return;
+      }
+      body.innerHTML = data.map(t => `
+        <div class="d-flex align-items-start gap-2 p-2 mb-1 rounded" style="background:rgba(79,142,247,.05);border:1px solid rgba(79,142,247,.1)">
+          <div class="flex-grow-1">
+            <div class="small fw-semibold">${t.name}</div>
+            <div class="text-muted" style="font-size:.7rem">${(t.description||'').slice(0,80)}${t.description && t.description.length>80?'…':''}</div>
+          </div>
+          <div class="d-flex flex-column gap-1 align-items-end">
+            <span class="badge ${ t.severity==='critical'?'bg-danger': t.severity==='high'?'bg-warning text-dark': t.severity==='medium'?'bg-info text-dark':'bg-secondary' }" style="font-size:.6rem">${t.severity||'?'}</span>
+            <a href="/threat/explain/${encodeURIComponent(t.name)}" class="btn btn-sm btn-outline-primary py-0 px-1" style="font-size:.65rem">Explain</a>
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      body.innerHTML = `<p class="text-danger small text-center py-3">Failed to load threats.</p>`;
+    }
+  });
+});
+
+async function checkIOC() {
+  const value = document.getElementById('iocValue').value.trim();
+  if (!value) return;
+  try {
+    const data = await CyberShield.apiPost('/api/v1/ioc/check', { value });
+    const el = document.getElementById('iocResult');
+    el.innerHTML = data.found
+      ? `<div class="alert alert-danger py-2 small"><strong>IOC FOUND!</strong> Type: ${data.type} | Threat: ${data.threat} | Confidence: ${data.confidence}%</div>`
+      : `<div class="alert alert-success py-2 small">Not found in IOC database.</div>`;
+  } catch(err) { CyberShield.showToast(err.message,'danger'); }
+}
+</script>
+{% endblock %}

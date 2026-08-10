@@ -1,0 +1,68 @@
+{# Educational Phishing Demo Base — DO NOT USE FOR REAL ATTACKS #}
+{% macro phishing_demo(brand, brand_icon, brand_color, title, subtitle, fields, warning_text, submit_label='Continue') %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} — Phishing Demo</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .phishing-demo-banner { background: linear-gradient(90deg, #ff4757, #ff6b81); color: #fff; text-align: center; padding: 10px 16px; font-size: 0.85rem; font-weight: 600; position: sticky; top: 0; z-index: 100; }
+    .fake-page { max-width: 420px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); overflow: hidden; }
+    .fake-header { background: {{ brand_color }}; color: #fff; padding: 24px; text-align: center; }
+    .fake-body { padding: 32px 24px; }
+    .red-flag { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-top: 20px; font-size: 0.8rem; }
+    .edu-panel { max-width: 420px; margin: 20px auto; background: #1a1a2e; color: #e8e8f0; border-radius: 12px; padding: 20px; }
+  </style>
+</head>
+<body>
+  <div class="phishing-demo-banner">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    EDUCATIONAL PHISHING DEMO — This is a fake page for learning purposes only. No data is collected.
+    <a href="/simulation/" style="color:#fff;margin-left:12px">← Back to Simulator</a>
+  </div>
+
+  <div class="fake-page">
+    <div class="fake-header">
+      <i class="fas {{ brand_icon }} fa-2x mb-2"></i>
+      <h5 class="mb-0">{{ brand }}</h5>
+      <small>{{ subtitle }}</small>
+    </div>
+    <div class="fake-body">
+      <h6 class="mb-3">{{ title }}</h6>
+      <form onsubmit="event.preventDefault(); showCaught();">
+        {% for field in fields %}
+        <div class="mb-3">
+          <label class="form-label small">{{ field.label }}</label>
+          <input type="{{ field.type or 'text' }}" class="form-control" placeholder="{{ field.placeholder or '' }}">
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn w-100" style="background:{{ brand_color }};color:#fff;border:none;padding:10px">
+          {{ submit_label }}
+        </button>
+      </form>
+      <div class="red-flag">
+        <strong><i class="fas fa-flag me-1"></i>Red Flags to Spot:</strong><br>
+        {{ warning_text }}
+      </div>
+    </div>
+  </div>
+
+  <div class="edu-panel" id="caughtPanel" style="display:none">
+    <h6 class="text-warning mb-2"><i class="fas fa-fish me-2"></i>You've Been Phished!</h6>
+    <p class="small mb-2">In a real attack, your credentials would now be stolen. This demo shows how convincing fake pages can look.</p>
+    <p class="small mb-0 text-muted">Always verify URLs, look for HTTPS, and never enter credentials from email links.</p>
+  </div>
+
+  <script>
+    function showCaught() {
+      document.getElementById('caughtPanel').style.display = 'block';
+      document.querySelector('.fake-page').style.opacity = '0.5';
+    }
+  </script>
+</body>
+</html>
+{% endmacro %}

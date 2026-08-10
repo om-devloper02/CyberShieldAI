@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, empty_state %}
+{% block title %}Training Modules{% endblock %}
+{% block page_title %}Training Modules{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Admin', url_for('admin.index')), ('Training', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <h5 class="fw-bold mb-0">Training Module Management</h5>
+  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addModuleModal">
+    <i class="fas fa-plus me-1"></i>Add Module
+  </button>
+</div>
+
+<div class="row g-4">
+  {% for mod in modules %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div class="sim-icon" style="background:rgba(79,142,247,0.1);width:44px;height:44px;font-size:1.1rem;margin:0">
+            <i class="fas {{ mod.icon or 'fa-book' }} text-primary"></i>
+          </div>
+          <span class="badge bg-{{ 'success' if mod.is_active else 'secondary' }}">{{ 'Active' if mod.is_active else 'Inactive' }}</span>
+        </div>
+        <h6 class="fw-bold">{{ mod.title }}</h6>
+        <p class="small text-muted mb-3">{{ mod.description }}</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge bg-secondary">{{ mod.difficulty | title }}</span>
+          <span class="badge bg-secondary"><i class="fas fa-clock me-1"></i>{{ mod.duration_minutes }} min</span>
+          <span class="badge bg-secondary">{{ mod.quizzes.count() }} quizzes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">{{ empty_state('fa-book', 'No modules', 'Create training modules for users.') }}</div>
+  {% endfor %}
+</div>
+
+<div class="modal fade" id="addModuleModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content cs-modal">
+      <div class="modal-header"><h5 class="modal-title">Add Training Module</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="addModuleForm">
+          <div class="row g-3">
+            <div class="col-12"><label class="form-label">Title</label><input type="text" name="title" class="form-control" required></div>
+            <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+            <div class="col-md-4"><label class="form-label">Difficulty</label>
+              <select name="difficulty" class="form-select"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select>
+            </div>
+            <div class="col-md-4"><label class="form-label">Duration (min)</label><input type="number" name="duration_minutes" class="form-control" value="15"></div>
+            <div class="col-md-4"><label class="form-label">Icon (FA class)</label><input type="text" name="icon" class="form-control" value="fa-book"></div>
+            <div class="col-12"><label class="form-label">Content</label><textarea name="content" class="form-control" rows="5"></textarea></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" id="saveModuleBtn">Save Module</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('saveModuleBtn').addEventListener('click', async () => {
+  const data = Object.fromEntries(new FormData(document.getElementById('addModuleForm')));
+  try {
+    await CyberShield.apiPost('/admin/training/modules/add', data);
+    CyberShield.showToast('Module created', 'success');
+    bootstrap.Modal.getInstance(document.getElementById('addModuleModal')).hide();
+    setTimeout(() => location.reload(), 1000);
+  } catch(e) { CyberShield.showToast(e.message, 'danger'); }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, pagination, empty_state, risk_badge, confirm_modal %}
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Admin', url_for('admin.index')), ('Users', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h5 class="fw-bold mb-1">User Management</h5>
+    <p class="text-muted small mb-0">{{ users.total }} registered users</p>
+  </div>
+  <a href="{{ url_for('admin.index') }}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back to Admin</a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-8">
+        <label class="form-label">Search Users</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" name="search" class="form-control" value="{{ search }}" placeholder="Search by username or email...">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-2"></i>Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Score</th><th>Joined</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users.items %}
+          <tr id="user-row-{{ u.id }}">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="avatar-circle sm">{{ u.username[0] | upper }}</span>
+                <span class="fw-semibold small">{{ u.username }}</span>
+              </div>
+            </td>
+            <td class="small text-muted">{{ u.email }}</td>
+            <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ u.role.name }}</span></td>
+            <td>
+              <span class="badge {% if u.is_active %}bg-success{% else %}bg-danger{% endif %}" id="status-{{ u.id }}">
+                {{ 'Active' if u.is_active else 'Disabled' }}
+              </span>
+            </td>
+            <td class="small fw-semibold">{{ u.cyber_score }}</td>
+            <td class="text-muted small">{{ u.created_at.strftime('%b %d, %Y') }}</td>
+            <td>
+              <div class="table-actions">
+                <button class="btn btn-sm btn-outline-warning toggle-user" data-id="{{ u.id }}" data-bs-toggle="tooltip" title="Toggle status">
+                  <i class="fas fa-power-off"></i>
+                </button>
+                {% if u.id != current_user.id %}
+                <button class="btn btn-sm btn-outline-danger delete-user" data-id="{{ u.id }}" data-name="{{ u.username }}" data-bs-toggle="tooltip" title="Delete user">
+                  <i class="fas fa-trash"></i>
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="p-0">{{ empty_state('fa-users', 'No users found', 'Try adjusting your search criteria.') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">{{ pagination(users, 'admin.users', {'search': search}) }}</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.toggle-user').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.id;
+    try {
+      const resp = await fetch(`/admin/users/${id}/toggle`, { method: 'POST' });
+      const data = await resp.json();
+      if (data.success) {
+        const badge = document.getElementById('status-' + id);
+        badge.className = 'badge ' + (data.is_active ? 'bg-success' : 'bg-danger');
+        badge.textContent = data.is_active ? 'Active' : 'Disabled';
+        CyberShield.showToast('User status updated', 'success');
+      }
+    } catch { CyberShield.showToast('Failed to update user', 'danger'); }
+  });
+});
+
+document.querySelectorAll('.delete-user').forEach(btn => {
+  btn.addEventListener('click', () => {
+    CyberShield.confirmAction('Delete User', `Delete user "${btn.dataset.name}"? This cannot be undone.`, async () => {
+      const resp = await fetch(`/admin/users/${btn.dataset.id}/delete`, { method: 'DELETE' });
+      const data = await resp.json();
+      if (data.success) {
+        document.getElementById('user-row-' + btn.dataset.id)?.remove();
+        CyberShield.showToast('User deleted', 'success');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

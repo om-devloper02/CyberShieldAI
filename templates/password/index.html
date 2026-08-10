@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Password Analyzer{% endblock %}
+{% block page_title %}Password Security Analyzer{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-key me-2 text-warning"></i>Password Strength Analyzer</div>
+      <div class="card-body">
+        <p class="text-muted small mb-4">Test your password strength in real-time. We never store your password.</p>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Enter Password</label>
+          <div class="input-group">
+            <span class="input-group-text" style="background:var(--bg-secondary);border-color:var(--border-color)">
+              <i class="fas fa-key text-warning"></i>
+            </span>
+            <input type="password" id="passwordInput" class="form-control form-control-lg"
+              placeholder="Type your password here...">
+            <button class="input-group-text" id="togglePassword"
+              style="background:var(--bg-secondary);border-color:var(--border-color);cursor:pointer">
+              <i class="fas fa-eye text-muted"></i>
+            </button>
+          </div>
+          <div class="form-text"><i class="fas fa-lock me-1"></i>Your password is never sent to our servers — analysis runs securely.</div>
+        </div>
+        <div id="passwordResult" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-info-circle me-2 text-primary"></i>What Makes a Strong Password?</div>
+      <div class="card-body p-0">
+        {% for icon, text in [
+          ('fa-ruler', 'At least 16 characters long'),
+          ('fa-font', 'Mix of UPPER and lowercase letters'),
+          ('fa-hashtag', 'Include numbers (0-9)'),
+          ('fa-at', 'Special characters (!@#$%^&*)'),
+          ('fa-times', 'No dictionary words or names'),
+          ('fa-ban', 'No repeating or sequential patterns'),
+          ('fa-fingerprint', 'Unique for every account'),
+        ] %}
+        <div class="check-item px-4" style="padding:10px 16px">
+          <i class="fas {{ icon }} text-primary nav-icon"></i>
+          <span class="small">{{ text }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="fas fa-shield me-2 text-success"></i>Password Tips</div>
+      <div class="card-body">
+        <p class="small text-muted mb-0">
+          Use a <strong>passphrase</strong> instead — combine 4 random words with numbers and symbols.<br><br>
+          Example: <code>Tiger$Blue9Mountain!</code><br><br>
+          Use a <strong>password manager</strong> like Bitwarden (free) to generate and store unique passwords.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

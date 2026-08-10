@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Hero Banner ── */
+.hero-banner {
+  background: linear-gradient(135deg, rgba(79,142,247,.18) 0%, rgba(165,94,234,.18) 100%);
+  border: 1px solid rgba(79,142,247,.3);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+}
+/* ── Score Ring ── */
+.score-ring-wrap { position:relative; width:110px; height:110px; flex-shrink:0; }
+.score-ring-wrap svg { transform:rotate(-90deg); }
+.score-ring-wrap .score-text {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+}
+/* ── Stat Cards ── */
+.adv-stat {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  transition: transform .2s, box-shadow .2s;
+}
+.adv-stat:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.25); }
+.adv-stat .icon-box {
+  width:44px; height:44px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+}
+.adv-stat .val { font-size:1.8rem; font-weight:700; line-height:1; }
+.adv-stat .delta { font-size:.72rem; }
+/* ── Tool Cards ── */
+.tool-tile {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  display: block;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.tool-tile:hover { transform:translateY(-3px); border-color:rgba(79,142,247,.5); box-shadow:0 6px 20px rgba(79,142,247,.12); }
+.tool-tile .t-icon {
+  width:42px; height:42px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;
+}
+/* ── Timeline ── */
+.timeline-item { display:flex; gap:.9rem; padding:.6rem 0; border-bottom:1px solid var(--border-color); }
+.timeline-item:last-child { border-bottom:none; }
+.tl-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.75rem; flex-shrink:0; margin-top:2px; }
+/* ── Threat Feed ── */
+.threat-item { padding:.55rem .75rem; border-radius:10px; background:rgba(255,71,87,.06); border:1px solid rgba(255,71,87,.15); margin-bottom:.5rem; }
+.threat-item:last-child { margin-bottom:0; }
+/* ── Leaderboard ── */
+.lb-row { display:flex; align-items:center; gap:.75rem; padding:.5rem .6rem; border-radius:10px; }
+.lb-row:hover { background:rgba(79,142,247,.07); }
+.lb-rank { width:24px; text-align:center; font-weight:700; font-size:.85rem; }
+.lb-avatar { width:32px; height:32px; border-radius:50%; background:rgba(79,142,247,.2); display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; flex-shrink:0; }
+/* ── Section label ── */
+.sec-label { font-size:.7rem; font-weight:700; letter-spacing:1.2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── HERO BANNER ── #}
+<div class="hero-banner d-flex align-items-center justify-content-between flex-wrap gap-4 mb-4">
+  <div class="d-flex align-items-center gap-4 flex-wrap">
+    {# Score Ring #}
+    <div class="score-ring-wrap">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(79,142,247,.15)" stroke-width="10"/>
+        <circle cx="55" cy="55" r="46" fill="none" stroke="#4f8ef7" stroke-width="10"
+          stroke-dasharray="289"
+          stroke-dashoffset="{{ 289 - (289 * current_user.cyber_score / 100) | int }}"
+          stroke-linecap="round"/>
+      </svg>
+      <div class="score-text">
+        <span class="fw-bold text-primary" style="font-size:1.4rem">{{ current_user.cyber_score }}</span>
+        <span class="text-muted" style="font-size:.65rem">SCORE</span>
+      </div>
+    </div>
+    <div>
+      <h5 class="fw-bold mb-1">Welcome back, {{ current_user.full_name or current_user.username }}!</h5>
+      <p class="text-muted small mb-2">{{ current_user.email }}</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="badge bg-primary bg-opacity-10 text-primary">
+          <i class="fas fa-shield me-1"></i>{{ current_user.role.name | title }}
+        </span>
+        <span class="badge bg-success bg-opacity-10 text-success">
+          <i class="fas fa-graduation-cap me-1"></i>{{ current_user.training_progress }}% Training
+        </span>
+        <span class="badge bg-warning bg-opacity-10 text-warning">
+          <i class="fas fa-search me-1"></i>{{ stats.total_scans }} Scans
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {# Training Progress #}
+  <div style="min-width:200px">
+    <div class="d-flex justify-content-between small mb-1">
+      <span class="text-muted">Training Progress</span>
+      <span class="fw-semibold text-primary">{{ current_user.training_progress }}%</span>
+    </div>
+    <div class="progress mb-3" style="height:8px;border-radius:8px">
+      <div class="progress-bar bg-primary" style="width:{{ current_user.training_progress }}%;border-radius:8px"></div>
+    </div>
+    <a href="{{ url_for('training.index') }}" class="btn btn-primary btn-sm w-100">
+      <i class="fas fa-play me-1"></i>Continue Training
+    </a>
+  </div>
+</div>
+
+{# ── STAT CARDS ── #}
+<div class="row g-3 mb-4">
+  {% set cards = [
+    ('Total Scans',    stats.total_scans,         'fa-search',          '#4f8ef7', 'rgba(79,142,247,.12)'),
+    ('Threats Found',  stats.dangerous_detected,  'fa-skull-crossbones','#ff4757', 'rgba(255,71,87,.12)'),
+    ('Suspicious',     stats.suspicious_detected, 'fa-exclamation',     '#ffa502', 'rgba(255,165,2,.12)'),
+    ('URLs Scanned',   stats.urls_scanned,        'fa-globe',           '#4f8ef7', 'rgba(79,142,247,.12)'),
+    ('Emails Scanned', stats.emails_scanned,      'fa-envelope',        '#2ed573', 'rgba(46,213,115,.12)'),
+    ('Cyber Score',    current_user.cyber_score,  'fa-shield-halved',   '#a55eea', 'rgba(165,94,234,.12)')
+  ] %}
+  {% for label, val, icon, color, bg in cards %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="adv-stat h-100">
+      <div class="icon-box mb-2" style="background:{{ bg }}">
+        <i class="fas {{ icon }}" style="color:{{ color }}"></i>
+      </div>
+      <div class="val" style="color:{{ color }}">{{ val }}</div>
+      <div class="text-muted small mt-1">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# ── CHARTS ROW ── #}
+<div class="row g-4 mb-4">
+  {# Weekly Bar Chart #}
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-chart-bar me-2 text-primary"></i>Weekly Scan Activity</span>
+        <span class="badge bg-primary bg-opacity-10 text-primary small">Last 7 Days</span>
+      </div>
+      <div class="card-body">
+        <canvas id="weeklyChart" height="90"></canvas>
+      </div>
+    </div>
+  </div>
+
+  {# Risk Doughnut #}
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-chart-pie me-2 text-primary"></i>Risk Breakdown</div>
+      <div class="card-body d-flex flex-column align-items-center justify-content-center">
+        <canvas id="riskChart" style="max-width:180px;max-height:180px"></canvas>
+        <div class="d-flex gap-3 mt-3 small">
+          <span><span class="badge" style="background:#2ed573">&nbsp;</span> Safe</span>
+          <span><span class="badge" style="background:#ffa502">&nbsp;</span> Suspicious</span>
+          <span><span class="badge" style="background:#ff4757">&nbsp;</span> Dangerous</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── TOOLS + ACTIVITY + SIDEBAR ── #}
+<div class="row g-4 mb-4">
+
+  {# Security Tools Grid #}
+  <div class="col-lg-8">
+    <div class="sec-label"><i class="fas fa-tools me-1"></i>Security Tools</div>
+    <div class="row g-2">
+      {% set tools = [
+        ('Website Scanner',   'website.index',    'fa-globe',          '#4f8ef7', 'rgba(79,142,247,.12)',  ['SSL','WHOIS','AI']),
+        ('Email Scanner',     'email.index',      'fa-envelope',       '#17a2b8', 'rgba(23,162,184,.12)',  ['SPF','DKIM','DMARC']),
+        ('Password Analyzer', 'password.index',   'fa-key',            '#ffa502', 'rgba(255,165,2,.12)',   ['Entropy','Crack Time']),
+        ('Malware Scanner',   'malware.index',    'fa-bug',            '#ff4757', 'rgba(255,71,87,.12)',   ['YARA','VirusTotal']),
+        ('Network Scanner',   'network.index',    'fa-network-wired',  '#2ed573', 'rgba(46,213,115,.12)',  ['Port Scan','Device Map']),
+        ('Attack Simulator',  'simulation.index', 'fa-flask',          '#ffa502', 'rgba(255,165,2,.12)',   ['SQLi','XSS','MITM']),
+        ('Training',          'training.index',   'fa-graduation-cap', '#4f8ef7', 'rgba(79,142,247,.12)',  ['Lessons','Quizzes']),
+        ('Threat Intel',      'threat.index',     'fa-radiation',      '#ff4757', 'rgba(255,71,87,.12)',   ['MITRE','IOC DB'])
+      ] %}
+      {% for name, ep, icon, color, bg, tags in tools %}
+      <div class="col-sm-6">
+        <a href="{{ url_for(ep) }}" class="tool-tile">
+          <div class="d-flex align-items-center gap-3">
+            <div class="t-icon" style="background:{{ bg }}">
+              <i class="fas {{ icon }}" style="color:{{ color }}"></i>
+            </div>
+            <div>
+              <div class="fw-semibold small">{{ name }}</div>
+              <div class="d-flex flex-wrap gap-1 mt-1">
+                {% for t in tags %}
+                <span class="badge bg-secondary" style="font-size:.6rem">{{ t }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Right Sidebar: Quick Scan + Leaderboard #}
+  <div class="col-lg-4 d-flex flex-column gap-4">
+
+    {# Quick URL Scan #}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-bolt me-2 text-warning"></i>Quick URL Scan</div>
+      <div class="card-body">
+        <form id="quickScanForm">
+          <div class="input-group input-group-sm">
+            <input type="url" id="quickUrl" class="form-control" placeholder="https://example.com">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+          </div>
+        </form>
+        <div id="quickResult" class="mt-2"></div>
+      </div>
+    </div>
+
+    {# Leaderboard #}
+    <div class="card flex-grow-1">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-trophy me-2 text-warning"></i>Top Defenders</span>
+        <a href="{{ url_for('training.leaderboard') }}" class="small text-primary">View All</a>
+      </div>
+      <div class="card-body p-2">
+        {% set medal = ['🥇','🥈','🥉'] %}
+        {% for entry in leaderboard %}
+        <div class="lb-row">
+          <div class="lb-rank">{{ medal[loop.index0] if loop.index0 < 3 else loop.index }}</div>
+          <div class="lb-avatar">{{ entry.user.username[0] | upper }}</div>
+          <div class="flex-grow-1">
+            <div class="small fw-semibold">{{ entry.user.username }}</div>
+            <div class="text-muted" style="font-size:.68rem">{{ entry.total_score }} pts</div>
+          </div>
+          <div class="text-primary fw-bold small">{{ entry.total_score }}</div>
+        </div>
+        {% else %}
+        <p class="text-muted small text-center py-3">No leaderboard data yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# ── RECENT SCANS + THREAT FEED ── #}
+<div class="row g-4">
+
+  {# Recent Scans Table #}
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-history me-2 text-primary"></i>Recent Scans</span>
+        <a href="{{ url_for('reports.index') }}" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-download me-1"></i>Export
+        </a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th style="width:90px">Type</th>
+                <th>Input</th>
+                <th style="width:100px">Risk</th>
+                <th style="width:60px">Score</th>
+                <th style="width:110px">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for scan in recent_scans %}
+              <tr>
+                <td>
+                  <span class="badge" style="background:rgba(79,142,247,.15);color:var(--accent-primary)">
+                    {{ scan.scan_type }}
+                  </span>
+                </td>
+                <td class="text-truncate small" style="max-width:180px">{{ scan.input_data or '-' }}</td>
+                <td><span class="risk-badge risk-{{ scan.risk_level or 'safe' }}">{{ scan.risk_level or 'safe' }}</span></td>
+                <td class="small fw-semibold">{{ scan.risk_score | int }}</td>
+                <td class="text-muted small">{{ scan.created_at.strftime('%b %d, %H:%M') }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-5">
+                  <i class="fas fa-search fa-2x d-block mb-2 opacity-25"></i>
+                  No scans yet — pick a tool above!
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Threat Feed + Activity Timeline #}
+  <div class="col-lg-4 d-flex flex-column gap-4">
+
+    {# Live Threat Feed #}
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-radiation me-2 text-danger"></i>Latest Threats</span>
+        <a href="{{ url_for('threat.index') }}" class="small text-primary">View All</a>
+      </div>
+      <div class="card-body p-2">
+        {% for threat in recent_threats %}
+        <div class="threat-item">
+          <div class="d-flex justify-content-between align-items-start">
+            <span class="small fw-semibold">{{ threat.name }}</span>
+            <span class="badge bg-danger bg-opacity-10 text-danger" style="font-size:.6rem">{{ threat.severity }}</span>
+          </div>
+          <div class="text-muted mt-1" style="font-size:.7rem">{{ threat.description[:80] }}…</div>
+        </div>
+        {% else %}
+        <p class="text-muted small text-center py-3">No active threats.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Activity Timeline #}
+    <div class="card flex-grow-1">
+      <div class="card-header"><i class="fas fa-clock me-2 text-primary"></i>Activity Timeline</div>
+      <div class="card-body p-2">
+        {% for scan in recent_scans[:6] %}
+        <div class="timeline-item">
+          <div class="tl-dot
+            {% if scan.risk_level == 'dangerous' %}bg-danger bg-opacity-15 text-danger
+            {% elif scan.risk_level == 'suspicious' %}bg-warning bg-opacity-15 text-warning
+            {% else %}bg-success bg-opacity-15 text-success{% endif %}">
+            <i class="fas
+              {% if scan.scan_type == 'website' %}fa-globe
+              {% elif scan.scan_type == 'email' %}fa-envelope
+              {% elif scan.scan_type == 'password' %}fa-key
+              {% elif scan.scan_type == 'malware' %}fa-bug
+              {% elif scan.scan_type == 'network' %}fa-network-wired
+              {% else %}fa-search{% endif %}"></i>
+          </div>
+          <div>
+            <div class="small fw-semibold">{{ scan.scan_type | title }} Scan</div>
+            <div class="text-truncate text-muted" style="font-size:.7rem;max-width:180px">{{ scan.input_data or '-' }}</div>
+            <div class="text-muted" style="font-size:.65rem">{{ scan.created_at.strftime('%b %d, %H:%M') }}</div>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted small text-center py-3">No activity yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Weekly Bar Chart ──
+const weekDays  = {{ seven_days | map(attribute='day')   | list | tojson }};
+const weekCounts= {{ seven_days | map(attribute='count') | list | tojson }};
+
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'bar',
+  data: {
+    labels: weekDays,
+    datasets: [{
+      label: 'Scans',
+      data: weekCounts,
+      backgroundColor: 'rgba(79,142,247,.7)',
+      borderRadius: 8,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: '#9999bb' } },
+      y: { beginAtZero: true, ticks: { color: '#9999bb', stepSize: 1 }, grid: { color: 'rgba(255,255,255,.05)' } }
+    }
+  }
+});
+
+// ── Risk Doughnut ──
+fetch('/dashboard/chart-data')
+  .then(r => r.json())
+  .then(data => {
+    const ctx = document.getElementById('riskChart');
+    const total = Object.values(data.by_risk).reduce((a,b)=>a+b,0);
+    if (!total) { ctx.parentElement.innerHTML = '<p class="text-muted small text-center">No scan data yet</p>'; return; }
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Safe','Suspicious','Dangerous'],
+        datasets: [{ data: [data.by_risk.safe||0, data.by_risk.suspicious||0, data.by_risk.dangerous||0],
+          backgroundColor: ['#2ed573','#ffa502','#ff4757'], borderWidth: 0 }]
+      },
+      options: { cutout: '68%', plugins: { legend: { display: false } } }
+    });
+  });
+
+// ── Quick URL Scan ──
+document.getElementById('quickScanForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const url = document.getElementById('quickUrl').value.trim();
+  if (!url) return;
+  const btn = e.target.querySelector('button');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+  try {
+    const data = await CyberShield.apiPost('/website/scan', { url });
+    const r = data.result;
+    document.getElementById('quickResult').innerHTML = `
+      <div class="d-flex align-items-center gap-2 mt-1">
+        <span class="risk-badge risk-${r.risk_level}">${r.risk_level}</span>
+        <span class="small text-muted">Score: ${r.risk_score}/100</span>
+        <a href="/website/" class="ms-auto small text-primary">Full Report →</a>
+      </div>`;
+  } catch(err) {
+    document.getElementById('quickResult').innerHTML = `<div class="text-danger small">${err.message}</div>`;
+  } finally {
+    btn.innerHTML = '<i class="fas fa-search"></i>';
+    btn.disabled = false;
+  }
+});
+</script>
+{% endblock %}

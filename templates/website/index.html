@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Website Scanner{% endblock %}
+{% block page_title %}Website / Phishing Scanner{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-xl-8">
+    <!-- Scanner Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-globe me-2 text-primary"></i>URL / Website Scanner
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-4">Enter a website URL to check if it's safe, suspicious, or a phishing site.</p>
+        <form id="websiteScanForm">
+          <div class="input-group mb-3">
+            <span class="input-group-text" style="background:var(--bg-secondary);border-color:var(--border-color)">
+              <i class="fas fa-link text-primary"></i>
+            </span>
+            <input type="url" id="urlInput" class="form-control form-control-lg"
+              placeholder="https://example.com" required>
+            <button type="submit" class="btn btn-scan px-4">
+              <i class="fas fa-search me-2"></i>Scan
+            </button>
+          </div>
+        </form>
+
+        <!-- Loading -->
+        <div id="scanLoading" class="scan-loading">
+          <div class="spinner"></div>
+          <p class="text-muted">Analyzing URL... This may take a few seconds.</p>
+          <div class="d-flex justify-content-center gap-2 flex-wrap mt-2">
+            <span class="badge bg-secondary">Checking SSL</span>
+            <span class="badge bg-secondary">WHOIS Lookup</span>
+            <span class="badge bg-secondary">Domain Age</span>
+            <span class="badge bg-secondary">AI Analysis</span>
+            <span class="badge bg-secondary">Safe Browsing</span>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div id="scanResult" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- QR Code Scanner -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-qrcode me-2 text-purple"></i>QR Code Scanner</div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Upload a QR code image to check if it leads to a malicious URL.</p>
+        <form id="qrForm" enctype="multipart/form-data">
+          <div class="d-flex gap-3 align-items-center flex-wrap">
+            <input type="file" name="file" id="qrFile" class="form-control" accept="image/*" style="max-width:300px">
+            <button type="submit" class="btn btn-outline-primary">
+              <i class="fas fa-qrcode me-2"></i>Scan QR
+            </button>
+          </div>
+        </form>
+        <div id="qrResult" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Info -->
+  <div class="col-xl-4">
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-info-circle me-2 text-info"></i>What We Check</div>
+      <div class="card-body p-0">
+        {% set checks = [
+          ('fa-lock', 'HTTPS & SSL Certificate', 'primary'),
+          ('fa-calendar', 'Domain Age via WHOIS', 'success'),
+          ('fa-link', 'Short URL Detection', 'warning'),
+          ('fa-spell-check', 'Typosquatting Detection', 'danger'),
+          ('fa-font', 'Homograph Attack Detection', 'purple'),
+          ('fa-search', 'Suspicious Keywords', 'info'),
+          ('fa-google', 'Google Safe Browsing', 'primary'),
+          ('fa-robot', 'AI Risk Classification', 'success'),
+          ('fa-redirect', 'Hidden Redirect Detection', 'warning'),
+          ('fa-server', 'IP-Based URL Check', 'danger'),
+        ] %}
+        {% for icon, label, color in checks %}
+        <div class="check-item px-4" style="padding-top:8px;padding-bottom:8px">
+          <i class="fas {{ icon }} text-{{ color }} nav-icon"></i>
+          <span class="small">{{ label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent Scans -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-history me-2"></i>Recent Website Scans</span>
+        <a href="{{ url_for('website.history') }}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      <div class="card-body p-0">
+        {% for scan in history[:8] %}
+        <div class="check-item px-4" style="padding:10px 16px">
+          <span class="risk-badge risk-{{ scan.risk_level or 'safe' }}" style="font-size:0.65rem;padding:2px 8px">{{ scan.risk_level }}</span>
+          <span class="small text-truncate" style="max-width:160px">{{ scan.input_data or '-' }}</span>
+        </div>
+        {% else %}
+        <div class="p-3 text-center text-muted small">No scans yet</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('qrForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const file = document.getElementById('qrFile').files[0];
+  if (!file) return CyberShield.showToast('Please select a QR image', 'warning');
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const data = await CyberShield.apiPost('/website/qr-scan', fd, true);
+    const el = document.getElementById('qrResult');
+    if (data.result.found) {
+      el.innerHTML = `<div class="alert alert-info">
+        <strong>QR Data:</strong> ${data.result.data}<br>
+        ${data.result.url_analysis ? `<strong>Risk:</strong> <span class="risk-badge risk-${data.result.url_analysis.risk_level}">${data.result.url_analysis.risk_level}</span>` : ''}
+      </div>`;
+    } else {
+      el.innerHTML = `<div class="alert alert-warning">No QR code found in image.</div>`;
+    }
+  } catch (err) {
+    CyberShield.showToast(err.message, 'danger');
+  }
+});
+</script>
+{% endblock %}

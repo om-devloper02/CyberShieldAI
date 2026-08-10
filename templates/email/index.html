@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}Email Scanner{% endblock %}
+{% block page_title %}Fake Email / Phishing Email Detector{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-envelope me-2 text-info"></i>Email Analyzer
+      </div>
+      <div class="card-body">
+        <!-- Tabs -->
+        <ul class="nav nav-pills mb-4" id="emailTabs">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pasteTab">
+              <i class="fas fa-paste me-1"></i>Paste Email
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#uploadTab">
+              <i class="fas fa-upload me-1"></i>Upload .eml File
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Paste Tab -->
+          <div class="tab-pane fade show active" id="pasteTab">
+            <form id="emailPasteForm">
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Paste Email Content (headers + body)</label>
+                <textarea name="email_text" id="emailTextarea" class="form-control" rows="12"
+                  placeholder="Paste the full email content here including headers...
+From: sender@example.com
+To: you@example.com
+Subject: Important Notice
+Date: Mon, 01 Jan 2024 10:00:00 +0000
+
+Email body here..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-scan">
+                <i class="fas fa-search me-2"></i>Analyze Email
+              </button>
+            </form>
+          </div>
+
+          <!-- Upload Tab -->
+          <div class="tab-pane fade" id="uploadTab">
+            <form id="emailUploadForm" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Upload .eml File</label>
+                <input type="file" name="file" id="emlFile" class="form-control" accept=".eml,.txt">
+                <div class="form-text">Supported: .eml files exported from email clients</div>
+              </div>
+              <button type="submit" class="btn btn-scan">
+                <i class="fas fa-search me-2"></i>Analyze File
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="emailLoading" class="scan-loading mt-4">
+          <div class="spinner"></div>
+          <p class="text-muted">Analyzing email... Checking SPF, DKIM, DMARC, headers, links...</p>
+        </div>
+
+        <!-- Results -->
+        <div id="emailResult" class="mt-4" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-shield me-2 text-info"></i>Email Analysis Checks</div>
+      <div class="card-body p-0">
+        {% for icon, label in [
+          ('fa-envelope-open', 'Header Analysis'),
+          ('fa-user-shield', 'Sender Verification'),
+          ('fa-check-double', 'SPF / DKIM / DMARC'),
+          ('fa-reply', 'Reply-To Mismatch'),
+          ('fa-link', 'Suspicious Links'),
+          ('fa-paperclip', 'Dangerous Attachments'),
+          ('fa-exclamation-triangle', 'Urgency Language Detection'),
+          ('fa-robot', 'AI Phishing Classifier'),
+        ] %}
+        <div class="check-item px-4" style="padding:10px 16px">
+          <i class="fas {{ icon }} text-info nav-icon"></i>
+          <span class="small">{{ label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function analyzeEmail(formData, isFile = false) {
+  document.getElementById('emailLoading').style.display = 'block';
+  document.getElementById('emailResult').style.display = 'none';
+  try {
+    const data = await CyberShield.apiPost('/email/scan', formData, isFile);
+    if (data.success) {
+      renderEmailResult(data.result);
+      const r = data.result;
+      showScanPopup(
+        r.risk_level,
+        `Threat Score: ${r.threat_score}/100`,
+        r.risk_level === 'safe' ? 'This email appears legitimate.' :
+        r.risk_level === 'suspicious' ? 'This email has suspicious indicators. Be cautious.' :
+        'This email is a phishing attempt! Do not click any links.',
+        data.scan_id ? `/email/result/${data.scan_id}` : null
+      );
+    }
+  } catch(err) {
+    CyberShield.showToast(err.message, 'danger');
+  } finally {
+    document.getElementById('emailLoading').style.display = 'none';
+  }
+}
+
+document.getElementById('emailPasteForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = document.getElementById('emailTextarea').value.trim();
+  if (!text) return CyberShield.showToast('Please paste email content', 'warning');
+  await analyzeEmail({ email_text: text });
+});
+
+document.getElementById('emailUploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const file = document.getElementById('emlFile').files[0];
+  if (!file) return CyberShield.showToast('Please select a file', 'warning');
+  const fd = new FormData();
+  fd.append('file', file);
+  await analyzeEmail(fd, true);
+});
+
+function renderEmailResult(r) {
+  const el = document.getElementById('emailResult');
+  el.style.display = 'block';
+  const lvlIcon = r.risk_level === 'safe' ? 'fa-check-circle' : r.risk_level === 'suspicious' ? 'fa-exclamation-triangle' : 'fa-times-circle';
+
+  el.innerHTML = `
+    <div class="scan-result-panel">
+      <div class="result-header ${r.risk_level} d-flex align-items-center gap-3 p-4">
+        <i class="fas ${lvlIcon} fa-3x" style="color:${r.risk_level==='safe'?'#2ed573':r.risk_level==='suspicious'?'#ffa502':'#ff4757'}"></i>
+        <div>
+          <div class="risk-badge risk-${r.risk_level} mb-2">${r.risk_level.toUpperCase()}</div>
+          <div>Threat Score: <strong>${r.threat_score}/100</strong></div>
+          ${r.ai_prediction ? `<small class="text-muted">AI: ${r.ai_prediction.label} (${r.ai_prediction.confidence}%)</small>` : ''}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <h6><i class="fas fa-shield me-2 text-primary"></i>Authentication</h6>
+            ${renderAuthChecks(r.auth_checks)}
+            <h6 class="mt-3"><i class="fas fa-user me-2 text-info"></i>Sender</h6>
+            <div class="small text-muted">${r.sender_analysis.raw || 'Unknown'}</div>
+            ${r.sender_analysis.mismatch ? '<div class="text-danger small"><i class="fas fa-times-circle me-1"></i>Reply-To mismatch!</div>' : ''}
+          </div>
+          <div class="col-md-6">
+            <h6><i class="fas fa-triangle-exclamation me-2 text-warning"></i>Findings</h6>
+            ${r.findings.map(f => `<div class="check-item"><i class="fas fa-times-circle check-fail"></i><span>${f}</span></div>`).join('') || '<div class="text-success small">No findings</div>'}
+            ${r.attachments.length ? `<h6 class="mt-3"><i class="fas fa-paperclip me-2 text-danger"></i>Attachments</h6>${r.attachments.map(a => `<div class="check-item"><i class="fas ${a.dangerous?'fa-skull-crossbones check-fail':'fa-file check-pass'}"></i><span>${a.name}</span></div>`).join('')}` : ''}
+          </div>
+        </div>
+        <div class="mt-3">
+          <h6><i class="fas fa-lightbulb me-2 text-success"></i>Recommendations</h6>
+          ${r.recommendations.map(rec => `<div class="check-item"><i class="fas fa-arrow-right check-pass"></i><span>${rec}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAuthChecks(auth) {
+  if (!auth) return '';
+  return ['spf', 'dkim', 'dmarc'].map(k => {
+    const item = auth[k];
+    const pass = item?.pass || item?.exists;
+    return `<div class="check-item"><i class="fas ${pass?'fa-check-circle check-pass':'fa-times-circle check-fail'}"></i><span>${k.toUpperCase()}: ${pass?'Pass':'Fail'}</span></div>`;
+  }).join('');
+}
+</script>
+{% endblock %}

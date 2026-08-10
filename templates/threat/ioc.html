@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, pagination, empty_state %}
+{% block title %}IOC Database{% endblock %}
+{% block page_title %}IOC Database{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Threat Intel', url_for('threat.index')), ('IOC Database', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Filter by Type</label>
+        <select name="type" class="form-select">
+          <option value="">All Types</option>
+          {% for t in ['ip', 'domain', 'url', 'hash', 'email'] %}
+          <option value="{{ t }}" {% if current_type == t %}selected{% endif %}>{{ t | upper }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-2"></i>Filter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Type</th><th>Value</th><th>Threat</th><th>Confidence</th><th>Source</th><th>Added</th></tr></thead>
+        <tbody>
+          {% for ioc in iocs.items %}
+          <tr>
+            <td><span class="badge bg-danger bg-opacity-10 text-danger">{{ ioc.type }}</span></td>
+            <td><code class="small">{{ ioc.value }}</code></td>
+            <td class="small">{{ ioc.threat_name or '-' }}</td>
+            <td><span class="badge {% if ioc.confidence > 70 %}bg-danger{% elif ioc.confidence > 40 %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ ioc.confidence }}%</span></td>
+            <td class="small text-muted">{{ ioc.source or '-' }}</td>
+            <td class="text-muted small">{{ ioc.created_at.strftime('%b %d, %Y') }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">{{ empty_state('fa-fingerprint', 'No IOCs found', 'No indicators match your filter.') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">{{ pagination(iocs, 'threat.ioc', {'type': current_type}) }}</div>
+</div>
+{% endblock %}

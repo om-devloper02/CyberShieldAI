@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberShield AI — AI-Powered Cyber Security Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <style>
+    .landing-page { color: #ffffff; }
+    .landing-page p,.landing-page .lead,.landing-page h1,.landing-page h2,.landing-page h6,
+    .landing-page .navbar-brand span,.landing-page footer p,.landing-page .text-muted,.landing-page .small { color: #ffffff !important; }
+
+    /* Hero */
+    .hero { min-height: 100vh; display: flex; align-items: center; background: radial-gradient(ellipse at top, rgba(79,142,247,0.15) 0%, transparent 60%), var(--bg-primary); position: relative; overflow: hidden; }
+    #particleCanvas { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+    .hero > .container { position: relative; z-index: 1; }
+
+    /* Feature cards */
+    .feature-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 28px; transition: all 0.35s cubic-bezier(.4,0,.2,1); animation: fadeInUp 0.6s ease both; }
+    .feature-card:hover { transform: translateY(-8px) scale(1.02); border-color: var(--accent-primary); box-shadow: 0 20px 48px rgba(79,142,247,0.18); }
+    .feature-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px; transition: transform 0.3s; }
+    .feature-card:hover .feature-icon { transform: rotate(10deg) scale(1.15); }
+
+    /* Hero badge */
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; color: var(--accent-primary); animation: badgePop 0.8s cubic-bezier(.34,1.56,.64,1) both; }
+    .stat-number { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .glow { text-shadow: 0 0 40px rgba(79,142,247,0.4); }
+
+    /* Animated shield */
+    .hero-shield-wrap { position: relative; display: inline-block; margin-bottom: 24px; }
+    .hero-shield { font-size: 5rem; color: var(--accent-primary); animation: shieldFloat 3s ease-in-out infinite; filter: drop-shadow(0 0 24px rgba(79,142,247,0.6)); }
+    .shield-ring { position: absolute; inset: -16px; border-radius: 50%; border: 2px solid rgba(79,142,247,0.25); animation: ringPulse 2.5s ease-in-out infinite; }
+    .shield-ring2 { position: absolute; inset: -32px; border-radius: 50%; border: 1px solid rgba(165,94,234,0.2); animation: ringPulse 2.5s ease-in-out infinite 0.8s; }
+
+    /* Animated terminal */
+    .hero-terminal { background: rgba(10,10,20,0.85); border: 1px solid rgba(79,142,247,0.3); border-radius: 12px; padding: 20px 24px; max-width: 480px; margin: 0 auto 32px; text-align: left; font-family: 'Cascadia Code','Fira Code',monospace; font-size: 0.82rem; backdrop-filter: blur(8px); }
+    .terminal-bar { display: flex; gap: 6px; margin-bottom: 14px; }
+    .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .t-red { background: #ff5f57; } .t-yellow { background: #febc2e; } .t-green { background: #28c840; }
+    .terminal-line { color: #a9dc76; margin: 3px 0; opacity: 0; }
+    .terminal-line.typed { animation: typeIn 0.4s ease forwards; }
+    .terminal-cursor { display: inline-block; width: 8px; height: 14px; background: var(--accent-primary); animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 2px; }
+
+    /* Scan beam animation on CTA button */
+    .btn-scan { position: relative; overflow: hidden; }
+    .btn-scan::after { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: scanBeam 2.5s ease-in-out infinite; }
+
+    /* Stats counter */
+    .stat-number { display: inline-block; }
+
+    /* Floating badges */
+    .float-badge { position: absolute; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 14px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); animation: floatBadge 4s ease-in-out infinite; white-space: nowrap; }
+    .float-badge-1 { top: 20%; left: 5%; animation-delay: 0s; }
+    .float-badge-2 { top: 35%; right: 5%; animation-delay: 1.5s; }
+    .float-badge-3 { bottom: 25%; left: 8%; animation-delay: 0.8s; }
+
+    /* Keyframes */
+    @keyframes shieldFloat { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-14px) rotate(2deg); } }
+    @keyframes ringPulse { 0%,100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.15); opacity: 0.15; } }
+    @keyframes badgePop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+    @keyframes typeIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+    @keyframes scanBeam { 0% { left: -100%; } 60%,100% { left: 150%; } }
+    @keyframes floatBadge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+    /* Stagger feature cards */
+    .feature-card:nth-child(1){animation-delay:.05s} .feature-card:nth-child(2){animation-delay:.1s}
+    .feature-card:nth-child(3){animation-delay:.15s} .feature-card:nth-child(4){animation-delay:.2s}
+    .feature-card:nth-child(5){animation-delay:.25s} .feature-card:nth-child(6){animation-delay:.3s}
+    .feature-card:nth-child(7){animation-delay:.35s} .feature-card:nth-child(8){animation-delay:.4s}
+    .feature-card:nth-child(9){animation-delay:.45s} .feature-card:nth-child(10){animation-delay:.5s}
+    .feature-card:nth-child(11){animation-delay:.55s} .feature-card:nth-child(12){animation-delay:.6s}
+
+    /* Section reveal */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* Glowing border on hover for stat boxes */
+    .stat-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 28px; transition: all 0.3s; }
+    .stat-box:hover { border-color: var(--accent-primary); box-shadow: 0 0 24px rgba(79,142,247,0.2); transform: translateY(-4px); }
+
+    /* Animated gradient text */
+    .gradient-text-anim { background: linear-gradient(270deg, #4f8ef7, #a55eea, #2ed573, #4f8ef7); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientShift 4s ease infinite; }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+  </style>
+</head>
+<body class="landing-page">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg" style="background:rgba(15,15,26,0.95);border-bottom:1px solid var(--border-color);backdrop-filter:blur(10px);position:fixed;top:0;left:0;right:0;z-index:1000">
+  <div class="container">
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
+      <i class="fas fa-shield-halved text-primary fa-lg"></i>
+      <span>CyberShield AI</span>
+    </a>
+    <div class="d-flex gap-2 ms-auto">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Login</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" style="padding-top:80px">
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Floating badges -->
+  <div class="float-badge float-badge-1 d-none d-lg-flex">
+    <i class="fas fa-check-circle text-success"></i><span>Phishing Detected ✓</span>
+  </div>
+  <div class="float-badge float-badge-2 d-none d-lg-flex">
+    <i class="fas fa-shield-halved text-primary"></i><span>AI Risk Score: 92/100</span>
+  </div>
+  <div class="float-badge float-badge-3 d-none d-lg-flex">
+    <i class="fas fa-lock text-success"></i><span>SSL Valid · Safe</span>
+  </div>
+
+  <div class="container text-center">
+    <!-- Animated shield -->
+    <div class="hero-shield-wrap mb-3" style="animation: zoomIn 0.8s ease both">
+      <div class="shield-ring2"></div>
+      <div class="shield-ring"></div>
+      <i class="fas fa-shield-halved hero-shield"></i>
+    </div>
+
+    <div class="hero-badge mb-4" style="animation-delay:0.2s"><i class="fas fa-bolt"></i>Built for Students, Researchers & Teams</div>
+
+    <h1 class="display-3 fw-bold mb-4 glow" style="animation: slideInLeft 0.8s ease 0.3s both">
+      Defend. Detect.
+      <span class="gradient-text-anim">Learn.</span>
+    </h1>
+
+    <p class="lead text-muted mb-4 mx-auto" style="max-width:600px; animation: fadeInUp 0.8s ease 0.5s both">
+      CyberShield AI is a <strong>completely free</strong> cyber security platform. Register now and get instant access to all tools — phishing detector, email scanner, password analyzer, attack simulator, AI assistant and more.
+    </p>
+
+    <!-- Animated terminal -->
+    <div class="hero-terminal mx-auto mb-4" style="animation: fadeInUp 0.8s ease 0.6s both">
+      <div class="terminal-bar">
+        <div class="terminal-dot t-red"></div>
+        <div class="terminal-dot t-yellow"></div>
+        <div class="terminal-dot t-green"></div>
+        <span style="color:#666;font-size:0.75rem;margin-left:8px">cybershield ~ scan</span>
+      </div>
+      <div class="terminal-line" id="tl1">$ cybershield scan --url https://suspicious-site.tk</div>
+      <div class="terminal-line" id="tl2" style="color:#ffa502">⚠ Analyzing URL... checking SSL, WHOIS, AI model</div>
+      <div class="terminal-line" id="tl3" style="color:#ff4757">✗ PHISHING DETECTED — Risk Score: 87/100</div>
+      <div class="terminal-line" id="tl4" style="color:#2ed573">✓ User protected. Threat logged to database.</div>
+      <div class="terminal-line" id="tl5">$ <span class="terminal-cursor"></span></div>
+    </div>
+
+    <div class="d-flex gap-3 justify-content-center flex-wrap mb-5" style="animation: fadeInUp 0.8s ease 0.7s both">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-scan btn-lg">
+        <i class="fas fa-rocket me-2"></i>Start Free — No Signup Fee
+      </a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+        <i class="fas fa-sign-in-alt me-2"></i>Login
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 justify-content-center mb-3" style="animation: fadeInUp 0.8s ease 0.9s both">
+      {% for num, label, icon in [('12+','Security Modules','fa-cubes'),('8','Attack Simulations','fa-flask'),('100%','Educational & Safe','fa-graduation-cap'),('AI','Powered Analysis','fa-robot')] %}
+      <div class="col-6 col-md-3">
+        <div class="stat-box">
+          <i class="fas {{ icon }} mb-2" style="font-size:1.4rem;color:var(--accent-primary)"></i>
+          <div class="stat-number" data-target="{{ num }}">{{ num }}</div>
+          <div class="text-muted small">{{ label }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section style="padding:80px 0;background:var(--bg-secondary)" class="reveal">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-2">Complete Security Platform</h2>
+    <p class="text-center text-muted mb-5">Everything you need in one place</p>
+    <div class="row g-4">
+      {% set features = [
+        ('fa-globe','Website Scanner','Detect phishing URLs with SSL, WHOIS, AI analysis','primary'),
+        ('fa-envelope','Email Scanner','SPF/DKIM/DMARC checks + AI phishing classifier','info'),
+        ('fa-key','Password Analyzer','Entropy, crack time, HaveIBeenPwned check','warning'),
+        ('fa-bug','Malware Scanner','Hash generation, YARA rules, VirusTotal lookup','danger'),
+        ('fa-network-wired','Network Scanner','Discover devices, open ports, risk analysis','success'),
+        ('fa-flask','Attack Simulator','Safe demos: SQLi, XSS, CSRF, MITM, DDoS','purple'),
+        ('fa-graduation-cap','Security Training','Interactive lessons, quizzes, certificates','primary'),
+        ('fa-robot','AI Assistant','Ask questions, get threat explanations & tips','info'),
+        ('fa-radiation','Threat Intelligence','MITRE ATT&CK, IOCs, threat database','danger'),
+        ('fa-chart-bar','Reports','PDF/Excel/CSV exports with analytics','success'),
+        ('fa-comment-slash','Scam Detector','SMS/WhatsApp/Telegram scam checker','warning'),
+        ('fa-qrcode','QR Code Scanner','Check QR codes for malicious URLs','primary'),
+      ] %}
+      {% for icon, title, desc, color in features %}
+      <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(79,142,247,0.1)">
+            <i class="fas {{ icon }} text-{{ color if color in ['primary','info','warning','danger','success'] else 'primary' }}"></i>
+          </div>
+          <h6 class="fw-bold mb-2">{{ title }}</h6>
+          <p class="small text-muted mb-0">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:80px 0;background:var(--bg-primary)" class="reveal">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3">Ready to secure yourself?</h2>
+    <p class="text-muted mb-4">Join CyberShield AI and start your cyber security journey today.</p>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-scan btn-lg">
+      <i class="fas fa-shield-halved me-2"></i>Get Started Free
+    </a>
+  </div>
+</section>
+
+<footer style="padding:24px 0;border-top:1px solid var(--border-color);text-align:center">
+  <p class="text-muted small mb-0">
+    © 2026 CyberShield AI — For Educational & Defensive Security Purposes Only
+    <span class="mx-2">|</span>
+    <i class="fas fa-shield-halved text-primary me-1"></i>No real attacks performed
+  </p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+// ===== Particle Canvas =====
+(function(){
+  const canvas = document.getElementById('particleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * 1920, y: Math.random() * 1080,
+      r: Math.random() * 2 + 0.5,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      alpha: Math.random() * 0.5 + 0.1
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(79,142,247,${p.alpha})`;
+      ctx.fill();
+    });
+    // Draw connecting lines
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(79,142,247,${0.12 * (1 - dist/120)})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ===== Terminal Typewriter =====
+(function(){
+  const lines = ['tl1','tl2','tl3','tl4','tl5'];
+  const delays = [400, 1200, 2200, 3200, 4000];
+  lines.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('typed');
+    }, delays[i]);
+  });
+  // Loop terminal
+  setInterval(() => {
+    lines.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('typed');
+    });
+    setTimeout(() => {
+      lines.forEach((id, i) => {
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('typed');
+        }, [400,1200,2200,3200,4000][i]);
+      });
+    }, 500);
+  }, 8000);
+})();
+
+// ===== Scroll Reveal =====
+(function(){
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+})();
+</script>
+</body>
+</html>

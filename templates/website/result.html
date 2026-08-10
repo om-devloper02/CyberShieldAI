@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, risk_badge %}
+{% block title %}Scan Result{% endblock %}
+{% block page_title %}Scan Result Details{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Website Scanner', url_for('website.index')), ('History', url_for('website.history')), ('Result', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="scan-result-panel mb-4">
+  <div class="result-header {{ scan.risk_level or 'safe' }}">
+    <div class="risk-gauge" id="gaugeContainer"></div>
+    <div>
+      {{ risk_badge(scan.risk_level) }}
+      <h5 class="mt-2 mb-1">{{ scan.input_data }}</h5>
+      <small class="text-muted">Scanned on {{ scan.created_at.strftime('%B %d, %Y at %H:%M') }}</small>
+    </div>
+  </div>
+  {% if scan.details %}
+  <div class="card-body">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h6 class="mb-3"><i class="fas fa-list-check me-2 text-primary"></i>Security Checks</h6>
+        {% set checks = scan.details.get('checks', {}) %}
+        {% for key, label in [('https','HTTPS'),('ssl','SSL Valid'),('short_url','No Short URL'),('ip_url','Not IP URL')] %}
+        <div class="check-item">
+          <i class="fas fa-{{ 'check-circle check-pass' if (checks.get(key) == True or (key == 'short_url' and not checks.get(key))) else 'times-circle check-fail' }}"></i>
+          <span class="small">{{ label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="col-md-6">
+        <h6 class="mb-3"><i class="fas fa-triangle-exclamation me-2 text-warning"></i>Findings</h6>
+        {% for f in scan.details.get('findings', []) %}
+        <div class="check-item"><i class="fas fa-exclamation-circle check-fail"></i><span class="small">{{ f }}</span></div>
+        {% else %}
+        <div class="check-item"><i class="fas fa-check-circle check-pass"></i><span class="small">No issues found</span></div>
+        {% endfor %}
+        {% if scan.details.get('recommendations') %}
+        <h6 class="mt-3 mb-2"><i class="fas fa-lightbulb me-2 text-success"></i>Recommendations</h6>
+        {% for rec in scan.details.recommendations %}
+        <div class="check-item"><i class="fas fa-arrow-right check-pass"></i><span class="small">{{ rec }}</span></div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="d-flex gap-2">
+  <a href="{{ url_for('website.index') }}" class="btn btn-primary"><i class="fas fa-search me-2"></i>Scan Another URL</a>
+  <a href="{{ url_for('website.history') }}" class="btn btn-outline-secondary"><i class="fas fa-history me-2"></i>View History</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>drawGauge('gaugeContainer', {{ scan.risk_score | int }}, '{{ scan.risk_level or "safe" }}');</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Security Reports{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Dashboard', url_for('dashboard.index')), ('Reports', '#')]) }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-chart-bar me-2 text-primary"></i>Generate Report</div>
+      <div class="card-body">
+        <div class="row g-3 align-items-end mb-4">
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold">Time Period</label>
+            <select id="reportPeriod" class="form-select">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label small fw-semibold">Export Format</label>
+            <div class="d-flex gap-2 flex-wrap">
+              <a id="pdfBtn" href="/reports/export/pdf?days=30" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-2"></i>PDF
+              </a>
+              <a id="excelBtn" href="/reports/export/excel?days=30" class="btn btn-success">
+                <i class="fas fa-file-excel me-2"></i>Excel
+              </a>
+              <a id="csvBtn" href="/reports/export/csv?days=30" class="btn btn-outline-primary">
+                <i class="fas fa-file-csv me-2"></i>CSV
+              </a>
+              <button class="btn btn-primary" onclick="loadSummary()" id="loadSummaryBtn">
+                <i class="fas fa-sync me-2"></i>Preview Summary
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="reportSummary"></div>
+        <div id="summaryLoading" class="scan-loading"><div class="spinner"></div><p class="text-muted">Generating summary...</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-info-circle me-2 text-info"></i>Report Contents</div>
+      <div class="card-body p-0">
+        {% for icon, label in [
+          ('fa-chart-pie','Scan type distribution'),
+          ('fa-shield-halved','Risk level breakdown'),
+          ('fa-list','All scan history'),
+          ('fa-lightbulb','Security recommendations'),
+          ('fa-chart-line','Daily activity trend'),
+          ('fa-star','Cyber score & progress'),
+        ] %}
+        <div class="check-item px-4" style="padding:10px 16px">
+          <i class="fas {{ icon }} text-primary nav-icon"></i>
+          <span class="small">{{ label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('summaryLoading').style.display = 'none';
+document.getElementById('reportPeriod').addEventListener('change', function() {
+  const days = this.value;
+  document.getElementById('pdfBtn').href = `/reports/export/pdf?days=${days}`;
+  document.getElementById('excelBtn').href = `/reports/export/excel?days=${days}`;
+  document.getElementById('csvBtn').href = `/reports/export/csv?days=${days}`;
+});
+
+async function loadSummary() {
+  const days = document.getElementById('reportPeriod').value;
+  const btn = document.getElementById('loadSummaryBtn');
+  document.getElementById('summaryLoading').style.display = 'block';
+  document.getElementById('reportSummary').innerHTML = '';
+  btn.disabled = true;
+  try {
+    const resp = await fetch(`/reports/summary?days=${days}`);
+    const html = await resp.text();
+    document.getElementById('reportSummary').innerHTML = html;
+    CyberShield.showToast('Report summary loaded', 'success');
+  } catch(err) { CyberShield.showToast('Failed to load summary', 'danger'); }
+  finally {
+    document.getElementById('summaryLoading').style.display = 'none';
+    btn.disabled = false;
+  }
+}
+loadSummary();
+</script>
+{% endblock %}

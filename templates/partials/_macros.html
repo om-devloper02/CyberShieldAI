@@ -1,0 +1,102 @@
+{# CyberShield AI — Reusable UI Macros #}
+
+{% macro page_header(title, subtitle='', icon='fa-shield-halved', actions='') %}
+<div class="page-header mb-4 fade-in-up">
+  <div class="page-header-content">
+    <div class="page-header-icon"><i class="fas {{ icon }}"></i></div>
+    <div>
+      <h4 class="page-header-title mb-0">{{ title }}</h4>
+      {% if subtitle %}<p class="page-header-subtitle mb-0">{{ subtitle }}</p>{% endif %}
+    </div>
+  </div>
+  {% if caller %}<div class="page-header-actions">{{ caller() }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro pagination(pager, endpoint, extra_args={}) %}
+{% if pager.pages > 1 %}
+<nav class="cs-pagination" aria-label="Pagination">
+  <ul class="pagination mb-0">
+    <li class="page-item {% if not pager.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for(endpoint, page=pager.prev_num, **extra_args) if pager.has_prev else '#' }}">
+        <i class="fas fa-chevron-left"></i>
+      </a>
+    </li>
+    {% for p in pager.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+      <li class="page-item {% if p == pager.page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for(endpoint, page=p, **extra_args) }}">{{ p }}</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pager.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for(endpoint, page=pager.next_num, **extra_args) if pager.has_next else '#' }}">
+        <i class="fas fa-chevron-right"></i>
+      </a>
+    </li>
+  </ul>
+  <span class="pagination-info text-muted small">Page {{ pager.page }} of {{ pager.pages }} · {{ pager.total }} items</span>
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro empty_state(icon='fa-inbox', title='No data yet', message='Nothing to display here.', action_url='', action_label='') %}
+<div class="empty-state">
+  <div class="empty-state-icon"><i class="fas {{ icon }}"></i></div>
+  <h5>{{ title }}</h5>
+  <p class="text-muted">{{ message }}</p>
+  {% if action_url %}
+  <a href="{{ action_url }}" class="btn btn-primary btn-sm mt-2">
+    <i class="fas fa-plus me-1"></i>{{ action_label or 'Get Started' }}
+  </a>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro risk_badge(level) %}
+<span class="risk-badge risk-{{ level or 'safe' }}">
+  <i class="fas fa-{{ 'check-circle' if level == 'safe' else 'exclamation-triangle' if level == 'suspicious' else 'times-circle' }}"></i>
+  {{ (level or 'safe') | upper }}
+</span>
+{% endmacro %}
+
+{% macro confirm_modal(id, title, body, confirm_label='Confirm', confirm_class='btn-danger') %}
+<div class="modal fade" id="{{ id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cs-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-warning me-2"></i>{{ title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">{{ body }}</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn {{ confirm_class }}" id="{{ id }}Confirm">{{ confirm_label }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro loading_spinner(id='scanLoading', message='Processing...') %}
+<div id="{{ id }}" class="scan-loading">
+  <div class="spinner"></div>
+  <p class="text-muted mb-0">{{ message }}</p>
+</div>
+{% endmacro %}
+
+{% macro breadcrumb(items) %}
+<nav aria-label="breadcrumb" class="cs-breadcrumb mb-3">
+  <ol class="breadcrumb mb-0">
+    {% for label, url in items %}
+    {% if loop.last %}
+    <li class="breadcrumb-item active" aria-current="page">{{ label }}</li>
+    {% else %}
+    <li class="breadcrumb-item"><a href="{{ url }}">{{ label }}</a></li>
+    {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+{% endmacro %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, empty_state, risk_badge %}
+{% block title %}Search Threats{% endblock %}
+{% block page_title %}Search Threats{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Threat Intel', url_for('threat.index')), ('Search', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="GET" class="input-group input-group-lg">
+      <span class="input-group-text"><i class="fas fa-search text-primary"></i></span>
+      <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Search threats by name or description..." autofocus>
+      <button type="submit" class="btn btn-scan px-4">Search</button>
+    </form>
+  </div>
+</div>
+
+{% if query %}
+<div class="mb-3"><span class="text-muted small">{{ results | length }} result(s) for "<strong>{{ query }}</strong>"</span></div>
+{% endif %}
+
+<div class="row g-4">
+  {% for threat in results %}
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h6 class="fw-bold mb-0">{{ threat.name }}</h6>
+          <span class="badge {% if threat.severity == 'critical' %}bg-danger{% elif threat.severity == 'high' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ threat.severity }}</span>
+        </div>
+        <p class="small text-muted mb-3">{{ threat.description[:150] }}{% if threat.description|length > 150 %}...{% endif %}</p>
+        <div class="d-flex gap-2">
+          {% if threat.category %}<span class="badge bg-secondary">{{ threat.category.name }}</span>{% endif %}
+          {% if threat.mitre_technique %}<code class="small">{{ threat.mitre_technique }}</code>{% endif %}
+        </div>
+        <a href="{{ url_for('threat.explain', threat_type=threat.name) }}" class="btn btn-sm btn-outline-primary mt-3">
+          <i class="fas fa-info-circle me-1"></i>Learn More
+        </a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    {% if query %}
+    {{ empty_state('fa-search', 'No results', 'No threats match your search query.') }}
+    {% else %}
+    {{ empty_state('fa-search', 'Search threats', 'Enter a keyword to search the threat database.') }}
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

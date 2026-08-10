@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, empty_state %}
+{% block title %}Leaderboard{% endblock %}
+{% block page_title %}Training Leaderboard{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Training', url_for('training.index')), ('Leaderboard', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="card mb-4" style="background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,2,0.1));border-color:rgba(255,165,2,0.3)">
+  <div class="card-body text-center py-4">
+    <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
+    <h4 class="fw-bold">Cyber Security Leaderboard</h4>
+    <p class="text-muted small mb-0">Top performers in training and challenges</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th style="width:60px">Rank</th><th>User</th><th>Score</th><th>Modules</th><th>Challenges</th></tr></thead>
+        <tbody>
+          {% for entry in leaderboard %}
+          <tr {% if entry.user_id == current_user.id %}style="background:rgba(79,142,247,0.08)"{% endif %}>
+            <td>
+              {% if loop.index == 1 %}<span class="leaderboard-rank gold">1</span>
+              {% elif loop.index == 2 %}<span class="leaderboard-rank silver">2</span>
+              {% elif loop.index == 3 %}<span class="leaderboard-rank bronze">3</span>
+              {% else %}<span class="text-muted fw-bold">#{{ loop.index }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="avatar-circle sm">{{ entry.user.username[0] | upper if entry.user else '?' }}</span>
+                <span class="fw-semibold small">{{ entry.user.username if entry.user else 'Unknown' }}
+                  {% if entry.user_id == current_user.id %}<span class="badge bg-primary ms-1">You</span>{% endif %}
+                </span>
+              </div>
+            </td>
+            <td class="fw-bold text-primary">{{ entry.total_score }}</td>
+            <td class="small">{{ entry.modules_completed }}</td>
+            <td class="small">{{ entry.challenges_completed }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5">{{ empty_state('fa-trophy', 'No rankings yet', 'Complete training modules to appear on the leaderboard.') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="text-center mt-4">
+  <a href="{{ url_for('training.index') }}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Back to Training</a>
+</div>
+{% endblock %}

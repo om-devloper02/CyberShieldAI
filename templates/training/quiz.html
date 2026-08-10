@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, empty_state %}
+{% block title %}Quiz — {{ module.title }}{% endblock %}
+{% block page_title %}Quiz: {{ module.title }}{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Training', url_for('training.index')), (module.title, url_for('training.module', module_id=module.id)), ('Quiz', '#')]) }}{% endblock %}
+{% block content %}
+
+{% if questions %}
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="fas fa-question-circle me-2 text-primary"></i>Module Quiz</span>
+    <span class="badge bg-primary" id="quizTimer"><i class="fas fa-clock me-1"></i><span id="timerDisplay">00:00</span></span>
+  </div>
+  <div class="card-body">
+    <form id="quizForm">
+      <input type="hidden" name="module_id" value="{{ module.id }}">
+      {% for q in questions %}
+      <div class="mb-4 quiz-question" data-id="{{ q.id }}">
+        <h6 class="fw-semibold mb-3">{{ loop.index }}. {{ q.question }}</h6>
+        {% for opt, letter in [(q.option_a, 'a'), (q.option_b, 'b'), (q.option_c, 'c'), (q.option_d, 'd')] %}
+        {% if opt %}
+        <label class="quiz-option" data-answer="{{ letter }}">
+          <input type="radio" name="q_{{ q.id }}" value="{{ letter }}" class="d-none">
+          <span class="fw-semibold me-2">{{ letter | upper }}.</span>{{ opt }}
+        </label>
+        {% endif %}
+        {% endfor %}
+        <div class="quiz-feedback small mt-2 d-none" id="feedback-{{ q.id }}"></div>
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-scan btn-lg" id="submitQuiz">
+        <i class="fas fa-paper-plane me-2"></i>Submit Quiz
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="quizResult" class="d-none">
+  <div class="card text-center p-5">
+    <div id="resultIcon" class="mb-3"></div>
+    <h4 id="resultTitle" class="fw-bold"></h4>
+    <p id="resultMessage" class="text-muted"></p>
+    <div class="d-flex gap-2 justify-content-center mt-3">
+      <a href="{{ url_for('training.index') }}" class="btn btn-outline-primary">Back to Training</a>
+      <a href="{{ url_for('training.certificates') }}" class="btn btn-primary d-none" id="certLink"><i class="fas fa-certificate me-2"></i>View Certificate</a>
+    </div>
+  </div>
+</div>
+{% else %}
+{{ empty_state('fa-question-circle', 'No quiz questions', 'Quiz questions for this module are not available yet.', url_for('training.module', module_id=module.id), 'Back to Module') }}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let seconds = 0;
+const timer = setInterval(() => {
+  seconds++;
+  const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const s = String(seconds % 60).padStart(2, '0');
+  document.getElementById('timerDisplay').textContent = m + ':' + s;
+}, 1000);
+
+document.querySelectorAll('.quiz-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    const name = opt.querySelector('input').name;
+    document.querySelectorAll(`input[name="${name}"]`).forEach(i => i.closest('.quiz-option').classList.remove('selected'));
+    opt.classList.add('selected');
+    opt.querySelector('input').checked = true;
+  });
+});
+
+document.getElementById('quizForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearInterval(timer);
+  const answers = {};
+  document.querySelectorAll('.quiz-question').forEach(q => {
+    const id = q.dataset.id;
+    const checked = q.querySelector('input:checked');
+    if (checked) answers[id] = checked.value;
+  });
+  try {
+    const data = await CyberShield.apiPost('/training/quiz/submit', {
+      module_id: {{ module.id }},
+      answers, time_taken: seconds
+    });
+    document.getElementById('quizForm').closest('.card').classList.add('d-none');
+    const result = document.getElementById('quizResult');
+    result.classList.remove('d-none');
+    document.getElementById('resultIcon').innerHTML = data.passed
+      ? '<i class="fas fa-trophy fa-4x text-warning"></i>'
+      : '<i class="fas fa-redo fa-4x text-danger"></i>';
+    document.getElementById('resultTitle').textContent = data.passed ? 'Congratulations!' : 'Keep Learning!';
+    document.getElementById('resultMessage').textContent = `You scored ${data.score}/${data.total} (${data.percentage}%). ${data.passed ? 'Certificate earned!' : 'You need 70% to pass.'}`;
+    if (data.passed) document.getElementById('certLink').classList.remove('d-none');
+    Object.entries(data.answers).forEach(([id, info]) => {
+      const fb = document.getElementById('feedback-' + id);
+      if (fb) { fb.classList.remove('d-none'); fb.innerHTML = `<i class="fas fa-info-circle me-1"></i>Correct: ${info.correct.toUpperCase()}. ${info.explanation || ''}`; }
+    });
+    CyberShield.showToast(data.passed ? 'Quiz passed!' : 'Quiz completed', data.passed ? 'success' : 'warning');
+  } catch(err) { CyberShield.showToast(err.message, 'danger'); }
+});
+</script>
+{% endblock %}

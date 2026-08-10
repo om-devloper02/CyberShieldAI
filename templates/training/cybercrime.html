@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% block title %}Cyber Crime Portal{% endblock %}
+{% block page_title %}Cyber Crime Awareness & Reporting{% endblock %}
+{% block content %}
+
+<!-- Header Banner -->
+<div class="card mb-4" style="background:linear-gradient(135deg,rgba(255,71,87,0.15),rgba(255,165,2,0.1));border-color:rgba(255,71,87,0.3)">
+  <div class="card-body d-flex align-items-center gap-4 flex-wrap py-4">
+    <div style="width:70px;height:70px;border-radius:50%;background:rgba(255,71,87,0.15);border:2px solid rgba(255,71,87,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="fas fa-gavel fa-2x" style="color:var(--accent-danger)"></i>
+    </div>
+    <div>
+      <h4 class="fw-bold mb-1">Cyber Crime Awareness & Reporting Portal</h4>
+      <p class="text-muted mb-0">Learn about cyber crimes, your legal rights, and how to report incidents to Indian authorities.</p>
+    </div>
+    <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer"
+       class="btn ms-auto px-4 py-2 fw-bold"
+       style="background:var(--accent-danger);color:#fff;border:none;border-radius:10px;white-space:nowrap">
+      <i class="fas fa-external-link-alt me-2"></i>Report Cyber Crime Now
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- LEFT COLUMN -->
+  <div class="col-lg-8">
+
+    <!-- Official Portals -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-landmark me-2 text-primary"></i>Official Indian Cyber Crime Reporting Portals
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+
+          {% set portals = [
+            ('https://cybercrime.gov.in', 'fa-shield-halved', 'primary',
+             'National Cyber Crime Reporting Portal',
+             'Official Government of India portal to report all types of cyber crimes online.',
+             'cybercrime.gov.in', 'Report Online'),
+            ('https://www.cert-in.org.in', 'fa-server', 'warning',
+             'CERT-In — Indian Computer Emergency Response Team',
+             'Report cyber security incidents, vulnerabilities, and malware to India\'s national CERT.',
+             'cert-in.org.in', 'Visit CERT-In'),
+            ('https://www.mha.gov.in', 'fa-building-columns', 'info',
+             'Ministry of Home Affairs — Cyber Division',
+             'MHA oversees cyber crime policy and coordinates with state police cyber cells.',
+             'mha.gov.in', 'Visit MHA'),
+            ('https://www.rbi.org.in', 'fa-indian-rupee-sign', 'success',
+             'RBI — Report Banking / UPI Fraud',
+             'Report unauthorized transactions, UPI fraud, and banking cyber crimes to RBI.',
+             'rbi.org.in', 'Visit RBI'),
+          ] %}
+
+          {% for url, icon, color, title, desc, domain, btn_label in portals %}
+          <div class="col-md-6">
+            <div class="card h-100" style="border-color:rgba(79,142,247,0.2);transition:all 0.3s" onmouseover="this.style.borderColor='var(--accent-{{ color }})'" onmouseout="this.style.borderColor='rgba(79,142,247,0.2)'">
+              <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <div style="width:44px;height:44px;border-radius:12px;background:rgba(79,142,247,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="fas {{ icon }} text-{{ color }}"></i>
+                  </div>
+                  <div>
+                    <div class="fw-semibold" style="font-size:0.9rem">{{ title }}</div>
+                    <div class="text-muted" style="font-size:0.72rem">{{ domain }}</div>
+                  </div>
+                </div>
+                <p class="text-muted small mb-3">{{ desc }}</p>
+                <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
+                   class="btn btn-sm btn-outline-{{ color }} w-100">
+                  <i class="fas fa-external-link-alt me-1"></i>{{ btn_label }}
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+
+        <!-- Helpline Numbers -->
+        <div class="mt-4 p-3 rounded-3" style="background:rgba(46,213,115,0.08);border:1px solid rgba(46,213,115,0.25)">
+          <h6 class="fw-bold mb-3"><i class="fas fa-phone me-2 text-success"></i>Emergency Helpline Numbers</h6>
+          <div class="row g-2">
+            {% for number, label, color in [
+              ('1930', 'National Cyber Crime Helpline', 'success'),
+              ('155260', 'Cyber Fraud Helpline (RBI)', 'warning'),
+              ('100', 'Police Emergency', 'danger'),
+              ('1091', 'Women Cyber Crime Helpline', 'info'),
+            ] %}
+            <div class="col-sm-6 col-md-3">
+              <div class="text-center p-2 rounded-2" style="background:var(--bg-secondary);border:1px solid var(--border-color)">
+                <div class="fw-bold fs-4" style="color:var(--accent-{{ color }})">{{ number }}</div>
+                <div class="text-muted" style="font-size:0.72rem">{{ label }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Types of Cyber Crimes -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-list-ul me-2 text-warning"></i>Types of Cyber Crimes in India
+      </div>
+      <div class="card-body p-0">
+        {% set crimes = [
+          ('fa-fish', 'danger', 'Phishing & Email Fraud',
+           'Fake emails/SMS pretending to be banks, government, or companies to steal your credentials or money.',
+           'IPC Section 66C, 66D', 'Up to 3 years imprisonment + fine'),
+          ('fa-mobile-screen', 'warning', 'UPI / Banking Fraud',
+           'Fraudsters trick victims into sharing OTP, UPI PIN, or scanning QR codes to steal money.',
+           'IPC Section 420, IT Act 66D', 'Up to 7 years imprisonment'),
+          ('fa-user-secret', 'purple', 'Identity Theft',
+           'Stealing personal information (Aadhaar, PAN, bank details) to impersonate someone.',
+           'IT Act Section 66C', 'Up to 3 years + ₹1 lakh fine'),
+          ('fa-lock', 'danger', 'Ransomware Attack',
+           'Malware that encrypts your files and demands cryptocurrency payment for decryption.',
+           'IT Act Section 66, 43', 'Up to 3 years + compensation'),
+          ('fa-camera', 'danger', 'Cyberstalking / Harassment',
+           'Using internet to stalk, harass, or threaten someone. Includes morphed images and revenge content.',
+           'IPC Section 354D, IT Act 67', 'Up to 3 years imprisonment'),
+          ('fa-child', 'danger', 'Child Pornography / CSAM',
+           'Creating, distributing, or possessing sexual content involving minors.',
+           'IT Act Section 67B, POCSO Act', 'Up to 7 years imprisonment'),
+          ('fa-credit-card', 'warning', 'Online Shopping Fraud',
+           'Fake e-commerce websites, fake sellers, or payment fraud on legitimate platforms.',
+           'IPC Section 420, IT Act 66D', 'Up to 7 years imprisonment'),
+          ('fa-virus', 'danger', 'Malware / Hacking',
+           'Unauthorized access to computer systems, spreading viruses, or data theft.',
+           'IT Act Section 43, 66', 'Up to 3 years + ₹5 crore fine'),
+        ] %}
+        {% for icon, color, title, desc, law, penalty in crimes %}
+        <div class="p-4" style="border-bottom:1px solid var(--border-color)">
+          <div class="d-flex gap-3">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,71,87,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+              <i class="fas {{ icon }}" style="color:var(--accent-{% if color == 'purple' %}purple{% elif color == 'warning' %}warning{% else %}danger{% endif %})"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold mb-1">{{ title }}</div>
+              <p class="text-muted small mb-2">{{ desc }}</p>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge" style="background:rgba(79,142,247,0.15);color:var(--accent-primary);font-size:0.7rem">
+                  <i class="fas fa-scale-balanced me-1"></i>{{ law }}
+                </span>
+                <span class="badge" style="background:rgba(255,71,87,0.15);color:var(--accent-danger);font-size:0.7rem">
+                  <i class="fas fa-gavel me-1"></i>{{ penalty }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- How to Report Step by Step -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-list-ol me-2 text-success"></i>How to Report a Cyber Crime — Step by Step
+      </div>
+      <div class="card-body">
+        {% set steps = [
+          ('1', 'fa-camera', 'primary', 'Take Screenshots / Collect Evidence',
+           'Screenshot the fraud message, email, website URL, transaction ID, phone number, or any communication. Save all evidence before reporting.'),
+          ('2', 'fa-phone', 'success', 'Call Helpline 1930 Immediately',
+           'For financial fraud (UPI, banking), call 1930 immediately. Quick reporting can freeze the fraudster\'s account and recover money.'),
+          ('3', 'fa-globe', 'warning', 'File Online Complaint at cybercrime.gov.in',
+           'Go to cybercrime.gov.in → Click "Report Cyber Crime" → Select crime type → Fill details → Submit. You will get a complaint number.'),
+          ('4', 'fa-building', 'info', 'Visit Local Cyber Crime Police Station',
+           'For serious crimes (identity theft, harassment, hacking), visit your nearest cyber crime police station with printed evidence.'),
+          ('5', 'fa-file-alt', 'purple', 'File FIR if Needed',
+           'For crimes involving financial loss above ₹1 lakh or serious harassment, insist on filing an FIR. You have the legal right to get an FIR registered.'),
+        ] %}
+        {% for num, icon, color, title, desc in steps %}
+        <div class="d-flex gap-3 mb-4">
+          <div style="width:40px;height:40px;border-radius:50%;background:rgba(79,142,247,0.15);border:2px solid rgba(79,142,247,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;color:var(--accent-primary)">
+            {{ num }}
+          </div>
+          <div>
+            <div class="fw-semibold mb-1"><i class="fas {{ icon }} me-2 text-{{ color }}"></i>{{ title }}</div>
+            <p class="text-muted small mb-0">{{ desc }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col-lg-4">
+
+    <!-- Quick Report Button -->
+    <div class="card mb-4" style="background:linear-gradient(135deg,rgba(255,71,87,0.12),rgba(255,165,2,0.08));border-color:rgba(255,71,87,0.3)">
+      <div class="card-body text-center py-4">
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color:var(--accent-danger)"></i>
+        <h5 class="fw-bold mb-2">Are You a Victim?</h5>
+        <p class="text-muted small mb-3">Report immediately. The faster you report, the higher the chance of recovering money.</p>
+        <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer"
+           class="btn w-100 fw-bold mb-2" style="background:var(--accent-danger);color:#fff;border:none">
+          <i class="fas fa-flag me-2"></i>File Complaint Now
+        </a>
+        <a href="tel:1930" class="btn btn-outline-success w-100 fw-bold">
+          <i class="fas fa-phone me-2"></i>Call 1930 Helpline
+        </a>
+      </div>
+    </div>
+
+    <!-- Key Laws -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-scale-balanced me-2 text-info"></i>Key Cyber Laws in India</div>
+      <div class="card-body p-0">
+        {% for law, desc in [
+          ('IT Act 2000 (Amended 2008)', 'Primary law governing cyber crimes in India'),
+          ('Section 43', 'Unauthorized access to computer — compensation up to ₹5 crore'),
+          ('Section 66', 'Hacking / data theft — 3 years + fine'),
+          ('Section 66C', 'Identity theft — 3 years + ₹1 lakh fine'),
+          ('Section 66D', 'Cheating by impersonation — 3 years + fine'),
+          ('Section 67', 'Publishing obscene content — 5 years + fine'),
+          ('Section 67B', 'Child pornography — 7 years + fine'),
+          ('IPC Section 420', 'Cheating and fraud — 7 years + fine'),
+          ('IPC Section 354D', 'Cyberstalking — 3 years imprisonment'),
+        ] %}
+        <div class="check-item px-4" style="padding:10px 16px">
+          <i class="fas fa-gavel" style="color:var(--accent-primary);width:18px;flex-shrink:0"></i>
+          <div>
+            <div class="small fw-semibold">{{ law }}</div>
+            <div class="text-muted" style="font-size:0.72rem">{{ desc }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Prevention Tips -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-shield-halved me-2 text-success"></i>Prevention Tips</div>
+      <div class="card-body p-0">
+        {% for tip in [
+          'Never share OTP, PIN, or password with anyone — even bank employees.',
+          'Verify website URL before entering any payment details.',
+          'Enable 2FA on all banking and social media accounts.',
+          'Do not click links in unsolicited SMS or WhatsApp messages.',
+          'Use strong unique passwords for every account.',
+          'Keep your phone and apps updated to patch security vulnerabilities.',
+          'Never scan unknown QR codes to "receive" money.',
+          'Check sender email address carefully — not just the display name.',
+        ] %}
+        <div class="check-item px-4" style="padding:10px 16px">
+          <i class="fas fa-check-circle check-pass" style="flex-shrink:0"></i>
+          <span class="small">{{ tip }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- State Cyber Cells -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-map-marker-alt me-2 text-warning"></i>State Cyber Crime Cells</div>
+      <div class="card-body p-0">
+        {% for state, url in [
+          ('Maharashtra', 'https://www.cybercrimemumbai.gov.in'),
+          ('Delhi', 'https://delhipolice.gov.in'),
+          ('Karnataka', 'https://cybercrime.karnataka.gov.in'),
+          ('Tamil Nadu', 'https://www.tnpolice.gov.in'),
+          ('Telangana', 'https://www.tspolice.gov.in'),
+          ('Gujarat', 'https://www.gujaratpolice.gov.in'),
+          ('Rajasthan', 'https://police.rajasthan.gov.in'),
+          ('UP', 'https://uppolice.gov.in'),
+        ] %}
+        <div class="check-item px-4" style="padding:8px 16px">
+          <i class="fas fa-map-pin text-warning" style="width:18px;flex-shrink:0"></i>
+          <a href="{{ url }}" target="_blank" rel="noopener noreferrer"
+             class="small text-decoration-none" style="color:var(--accent-primary)">
+            {{ state }} Cyber Cell <i class="fas fa-external-link-alt ms-1" style="font-size:0.6rem"></i>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

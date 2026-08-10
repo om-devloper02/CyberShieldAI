@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card animate__animated animate__fadeInUp">
+    <a href="{{ url_for('index') }}" class="auth-close-btn" aria-label="Close and go to home" title="Back to Home">
+      <i class="fas fa-times"></i>
+    </a>
+    <div class="auth-logo">
+      <i class="fas fa-shield-halved"></i>
+      <h1>CyberShield AI</h1>
+      <p>AI-Powered Cyber Security Platform</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Username or Email</label>
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="fas fa-user"></i>
+          </span>
+          <input type="text" name="username" class="form-control"
+            placeholder="Enter username or email" required autofocus>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Password</label>
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="fas fa-lock"></i>
+          </span>
+          <input type="password" name="password" id="loginPassword"
+            class="form-control" placeholder="Enter password" required>
+          <button type="button" class="input-group-text" id="toggleLoginPwd">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="remember" id="rememberMe">
+          <label class="form-check-label small" for="rememberMe">Remember me</label>
+        </div>
+        <a href="{{ url_for('auth.forgot_password') }}"
+          class="small text-primary text-decoration-none">Forgot password?</a>
+      </div>
+
+      <div class="auth-actions">
+        <button type="submit" class="btn btn-scan">
+          <i class="fas fa-sign-in-alt me-2"></i>Login
+        </button>
+        <p class="auth-switch-text mb-0">Don't have an account?</p>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-auth-outline">
+          <i class="fas fa-user-plus me-2"></i>Register Free
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('toggleLoginPwd').addEventListener('click', function() {
+  const inp = document.getElementById('loginPassword');
+  const icon = this.querySelector('i');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+});
+</script>
+{% endblock %}

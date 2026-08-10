@@ -1,0 +1,4 @@
+{% from 'simulation/phishing/_macros.html' import phishing_demo %}
+{{ phishing_demo('Lucky Winner!', 'fa-trophy', '#e67e22', 'Claim Your $1,000,000 Prize', 'International Lottery Commission',
+  [{'label':'Full Name', 'placeholder':'John Doe'}, {'label':'Bank Account', 'placeholder':'For prize transfer'}, {'label':'Processing Fee', 'placeholder':'$99.99', 'submit':'Claim Prize Now!'}],
+  'You never entered a lottery, asks for payment to receive prize, too good to be true, poor grammar and generic sender.') }}

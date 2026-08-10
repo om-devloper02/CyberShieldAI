@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}400 Bad Request{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div>
+    <div class="error-icon" style="background:rgba(255,165,2,0.1);color:var(--accent-warning)">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="error-code" style="color:var(--accent-warning)">400</div>
+    <h3 class="mb-3">Bad Request</h3>
+    <p class="text-muted mb-4">The request could not be understood. Please check your input and try again.</p>
+    <button class="btn btn-primary" onclick="history.back()"><i class="fas fa-arrow-left me-2"></i>Go Back</button>
+  </div>
+</div>
+{% endblock %}

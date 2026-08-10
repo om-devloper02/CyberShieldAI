@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, empty_state %}
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Dashboard', url_for('dashboard.index')), ('Profile', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="profile-header-card mb-4 fade-in-up">
+  <div class="avatar-circle lg">{{ user.username[0] | upper }}</div>
+  <div class="flex-grow-1">
+    <h4 class="fw-bold mb-1">{{ user.full_name or user.username }}</h4>
+    <p class="text-muted mb-2"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+    <div class="d-flex gap-2 flex-wrap">
+      <span class="badge bg-primary bg-opacity-10 text-primary"><i class="fas fa-user-tag me-1"></i>{{ user.role.name | title }}</span>
+      {% if user.is_verified %}<span class="badge bg-success bg-opacity-10 text-success"><i class="fas fa-check-circle me-1"></i>Verified</span>{% endif %}
+      <span class="badge bg-secondary bg-opacity-10 text-secondary"><i class="fas fa-calendar me-1"></i>Joined {{ user.created_at.strftime('%b %Y') }}</span>
+    </div>
+  </div>
+  <div class="d-flex gap-3 flex-wrap">
+    <div class="profile-stat">
+      <div class="profile-stat-value text-primary">{{ user.cyber_score }}</div>
+      <div class="profile-stat-label">Cyber Score</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-value text-success">{{ user.training_progress }}%</div>
+      <div class="profile-stat-label">Training</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-value text-warning">{{ user.login_count }}</div>
+      <div class="profile-stat-label">Logins</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-user-edit me-2 text-primary"></i>Edit Profile</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('auth.update_profile') }}" data-loading>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control" value="{{ user.username }}" disabled>
+              <div class="form-text">Username cannot be changed</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" value="{{ user.email }}" disabled>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="full_name" class="form-control" value="{{ user.full_name or '' }}" placeholder="Your full name">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Bio</label>
+              <textarea name="bio" class="form-control" rows="3" placeholder="Tell us about yourself...">{{ user.bio or '' }}</textarea>
+            </div>
+          </div>
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Changes</button>
+            <a href="{{ url_for('auth.settings') }}" class="btn btn-outline-secondary"><i class="fas fa-gear me-2"></i>Settings</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-history me-2 text-info"></i>Recent Activity</span>
+        <a href="{{ url_for('reports.index') }}" class="btn btn-sm btn-outline-primary">View Reports</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead><tr><th>Action</th><th>Resource</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+              {% for log in recent_logs %}
+              <tr>
+                <td><span class="badge bg-secondary">{{ log.action }}</span></td>
+                <td class="small">{{ log.resource or '-' }}</td>
+                <td><span class="badge {% if log.status == 'success' %}bg-success{% else %}bg-danger{% endif %}">{{ log.status }}</span></td>
+                <td class="text-muted small">{{ log.created_at.strftime('%b %d, %H:%M') }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4">{{ empty_state('fa-clock', 'No activity yet', 'Your actions will appear here.') }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-chart-line me-2 text-success"></i>Security Progress</div>
+      <div class="card-body">
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small">Training Progress</span>
+            <span class="small fw-semibold">{{ user.training_progress }}%</span>
+          </div>
+          <div class="progress"><div class="progress-bar bg-success" style="width:{{ user.training_progress }}%"></div></div>
+        </div>
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small">Cyber Score</span>
+            <span class="small fw-semibold">{{ user.cyber_score }}/1000</span>
+          </div>
+          <div class="progress"><div class="progress-bar bg-primary" style="width:{{ (user.cyber_score / 10) | int }}%"></div></div>
+        </div>
+        <a href="{{ url_for('training.index') }}" class="btn btn-outline-primary w-100 btn-sm">
+          <i class="fas fa-graduation-cap me-2"></i>Continue Training
+        </a>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-award me-2 text-warning"></i>Certificates</div>
+      <div class="card-body">
+        {% set certs = user.certificates.all()[:3] %}
+        {% if certs %}
+        {% for cert in certs %}
+        <div class="check-item">
+          <i class="fas fa-certificate text-warning"></i>
+          <span class="small">{{ cert.module.title if cert.module else 'Module' }}</span>
+          <a href="{{ url_for('training.view_certificate', cert_id=cert.certificate_id) }}" class="ms-auto small text-primary">View</a>
+        </div>
+        {% endfor %}
+        <a href="{{ url_for('training.certificates') }}" class="btn btn-sm btn-outline-warning w-100 mt-2">All Certificates</a>
+        {% else %}
+        <p class="text-muted small mb-2">Complete training modules to earn certificates.</p>
+        <a href="{{ url_for('training.index') }}" class="btn btn-sm btn-outline-primary w-100">Start Training</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><i class="fas fa-info-circle me-2 text-info"></i>Account Info</div>
+      <div class="card-body p-0">
+        <div class="check-item px-4"><span class="text-muted small">Last Login</span><span class="ms-auto small">{{ user.last_login.strftime('%b %d, %Y %H:%M') if user.last_login else 'N/A' }}</span></div>
+        <div class="check-item px-4"><span class="text-muted small">Member Since</span><span class="ms-auto small">{{ user.created_at.strftime('%b %d, %Y') }}</span></div>
+        <div class="check-item px-4"><span class="text-muted small">Account Status</span><span class="ms-auto badge bg-success">Active</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

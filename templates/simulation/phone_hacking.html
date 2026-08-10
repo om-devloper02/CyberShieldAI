@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% block title %}Phone Hacking — How It Works & How to Stay Safe{% endblock %}
+{% block page_title %}📱 Phone Hacking — How It Works & How to Stay Safe{% endblock %}
+{% block content %}
+
+<!-- Header Banner -->
+<div class="card mb-4" style="background:linear-gradient(135deg,rgba(165,94,234,0.15),rgba(79,142,247,0.1));border-color:rgba(165,94,234,0.35)">
+  <div class="card-body d-flex align-items-center gap-4 flex-wrap py-4">
+    <div style="width:70px;height:70px;border-radius:50%;background:rgba(165,94,234,0.15);border:2px solid rgba(165,94,234,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="fas fa-mobile-screen-button fa-2x" style="color:var(--accent-purple)"></i>
+    </div>
+    <div>
+      <h4 class="fw-bold mb-1">How Phones Get Hacked — Educational Guide</h4>
+      <p class="text-muted mb-0">Understand every method attackers use to hack smartphones and learn exactly how to protect yourself.</p>
+    </div>
+    <span class="badge ms-auto px-3 py-2" style="background:rgba(46,213,115,0.15);color:var(--accent-success);border:1px solid rgba(46,213,115,0.3);font-size:0.8rem">
+      <i class="fas fa-shield-halved me-1"></i>Educational Only — No Real Attacks
+    </span>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- LEFT COLUMN — Attack Methods -->
+  <div class="col-lg-8">
+
+    <!-- How Phone Gets Hacked -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-skull-crossbones me-2 text-danger"></i>Top Ways Hackers Hack Your Phone
+      </div>
+      <div class="card-body p-0">
+
+        {% set attacks = [
+          (
+            'fa-wifi', 'danger', '1. Public Wi-Fi Attack (MITM)',
+            'Hacker creates a fake Wi-Fi hotspot named "Free_Airport_WiFi" or "CafeWiFi". When you connect, all your internet traffic passes through the hacker\'s device.',
+            [
+              'Your login credentials (email, banking, social media) are captured',
+              'Hacker can inject malware into websites you visit',
+              'Your OTPs and messages can be intercepted',
+            ],
+            [
+              'Never use public Wi-Fi for banking or sensitive apps',
+              'Always use a VPN on public networks',
+              'Check Wi-Fi name carefully before connecting',
+            ]
+          ),
+          (
+            'fa-message', 'warning', '2. Smishing (SMS Phishing)',
+            'Hacker sends a fake SMS pretending to be your bank, TRAI, courier, or government. The message contains a malicious link that installs malware or steals your credentials.',
+            [
+              'Fake: "Your SIM will be blocked. Click here to verify KYC: bit.ly/xxxxx"',
+              'Fake: "Your parcel is held. Pay ₹25 customs fee: link"',
+              'Fake: "TRAI: Your number will be disconnected in 24 hours"',
+            ],
+            [
+              'Never click links in unexpected SMS messages',
+              'Call the official number to verify any urgent message',
+              'Check the actual URL before clicking — hover or long press',
+            ]
+          ),
+          (
+            'fa-download', 'danger', '3. Malicious App Installation',
+            'Hacker publishes a fake app (fake game, fake VPN, fake antivirus, fake UPI app) on third-party websites or even sometimes on Play Store. Once installed, the app steals data.',
+            [
+              'App requests excessive permissions (contacts, SMS, camera, microphone)',
+              'Reads your OTPs from SMS and sends to hacker',
+              'Records calls, takes screenshots, tracks location',
+              'Steals banking credentials and UPI PINs',
+            ],
+            [
+              'Only install apps from Google Play Store or Apple App Store',
+              'Never install APK files from WhatsApp or websites',
+              'Check app permissions before installing',
+              'Read reviews and check developer name carefully',
+            ]
+          ),
+          (
+            'fa-qrcode', 'warning', '4. QR Code Scam (Quishing)',
+            'Hacker sends a QR code saying "Scan to receive ₹500 cashback" or "Scan to verify your account". Scanning actually initiates a payment FROM your account or installs malware.',
+            [
+              'You scan → money is DEBITED from your account (not credited)',
+              'QR code opens a phishing website that steals credentials',
+              'QR code triggers automatic app download with malware',
+            ],
+            [
+              'You NEVER need to scan a QR code to RECEIVE money',
+              'Only scan QR codes from trusted physical sources',
+              'Check the URL that opens after scanning before proceeding',
+            ]
+          ),
+          (
+            'fa-bluetooth', 'info', '5. Bluetooth Hacking (Bluejacking / Bluesnarfing)',
+            'When your Bluetooth is ON and set to "Discoverable", hackers nearby can connect to your phone without permission and steal contacts, messages, and files.',
+            [
+              'Bluejacking: Sending unsolicited messages via Bluetooth',
+              'Bluesnarfing: Stealing contacts, calendar, messages',
+              'Bluebugging: Full remote control of your phone',
+            ],
+            [
+              'Turn OFF Bluetooth when not in use',
+              'Never set Bluetooth to "Discoverable" in public',
+              'Reject unknown Bluetooth pairing requests',
+            ]
+          ),
+          (
+            'fa-sim-card', 'danger', '6. SIM Swapping Attack',
+            'Hacker calls your mobile operator pretending to be you, provides your personal details (name, DOB, address — obtained from social media), and gets a new SIM issued. Now all your OTPs go to the hacker.',
+            [
+              'Hacker receives all your OTPs on their new SIM',
+              'Takes over your bank account, email, WhatsApp',
+              'Transfers all your money before you realize',
+              'Locks you out of all accounts',
+            ],
+            [
+              'Set a SIM lock / port freeze with your operator',
+              'Never share personal details publicly on social media',
+              'Use authenticator apps (Google Authenticator) instead of SMS OTP',
+              'Set up account alerts for any SIM change activity',
+            ]
+          ),
+          (
+            'fa-charging-station', 'danger', '7. Juice Jacking (Fake USB Charging)',
+            'Hacker installs a modified USB charging station at airports, malls, or cafes. When you plug in your phone to charge, malware is installed or your data is copied.',
+            [
+              'All photos, contacts, messages can be copied silently',
+              'Malware installed that runs in background',
+              'Banking apps and credentials compromised',
+            ],
+            [
+              'Never use public USB charging ports',
+              'Carry your own power bank',
+              'Use a "charge-only" USB cable (no data pins)',
+              'If you must use public USB, select "Charge Only" on your phone',
+            ]
+          ),
+          (
+            'fa-eye', 'warning', '8. Spyware / Stalkerware',
+            'Someone with physical access to your phone (jealous partner, family member, employer) installs a hidden spy app. The app silently records calls, reads messages, tracks location.',
+            [
+              'All calls recorded and sent to attacker',
+              'All WhatsApp, SMS messages read remotely',
+              'Live location tracked 24/7',
+              'Camera and microphone activated remotely',
+            ],
+            [
+              'Check installed apps regularly for unknown apps',
+              'Use a strong screen lock — never share your PIN',
+              'Factory reset if you suspect spyware',
+              'Check battery drain — spyware drains battery fast',
+            ]
+          ),
+          (
+            'fa-phone-volume', 'warning', '9. Vishing (Voice Call Scam)',
+            'Hacker calls pretending to be bank customer care, police, TRAI, or IT department. They create panic and trick you into sharing OTP, installing remote access apps like AnyDesk.',
+            [
+              'You share OTP → account emptied immediately',
+              'You install AnyDesk/TeamViewer → hacker controls your phone',
+              'You transfer money to "safe account" → money gone',
+            ],
+            [
+              'Real banks NEVER ask for OTP on call',
+              'Hang up and call the official bank number yourself',
+              'Never install remote access apps on instruction of a caller',
+              'Government agencies never call to threaten arrest',
+            ]
+          ),
+          (
+            'fa-network-wired', 'danger', '10. SS7 Protocol Attack',
+            'SS7 is the old telecom protocol used by all mobile networks. Hackers with access to telecom infrastructure can intercept your SMS OTPs and calls from anywhere in the world.',
+            [
+              'Your SMS OTPs intercepted without touching your phone',
+              'Your calls can be listened to remotely',
+              'Your location tracked via cell towers',
+            ],
+            [
+              'Use authenticator apps instead of SMS-based 2FA',
+              'Use Signal or WhatsApp (end-to-end encrypted) for calls',
+              'This attack requires telecom-level access — mainly targets high-value individuals',
+            ]
+          ),
+        ] %}
+
+        {% for icon, color, title, desc, impacts, defenses in attacks %}
+        <div class="p-4" style="border-bottom:1px solid var(--border-color)">
+          <div class="d-flex gap-3">
+            <div style="width:46px;height:46px;border-radius:12px;background:rgba({% if color=='danger' %}255,71,87{% elif color=='warning' %}255,165,2{% elif color=='info' %}79,142,247{% else %}165,94,234{% endif %},0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+              <i class="fas {{ icon }}" style="color:var(--accent-{% if color=='info' %}primary{% elif color=='warning' %}warning{% elif color=='danger' %}danger{% else %}purple{% endif %})"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="fw-bold mb-2">{{ title }}</h6>
+              <p class="text-muted small mb-3">{{ desc }}</p>
+
+              <!-- Impact -->
+              <div class="mb-3">
+                <div class="small fw-semibold mb-2" style="color:var(--accent-danger)">
+                  <i class="fas fa-triangle-exclamation me-1"></i>What Happens:
+                </div>
+                {% for impact in impacts %}
+                <div class="d-flex gap-2 mb-1">
+                  <i class="fas fa-times-circle mt-1 check-fail" style="font-size:0.75rem;flex-shrink:0"></i>
+                  <span class="small" style="color:var(--accent-danger)">{{ impact }}</span>
+                </div>
+                {% endfor %}
+              </div>
+
+              <!-- Defense -->
+              <div class="p-3 rounded-2" style="background:rgba(46,213,115,0.06);border:1px solid rgba(46,213,115,0.2)">
+                <div class="small fw-semibold mb-2" style="color:var(--accent-success)">
+                  <i class="fas fa-shield-halved me-1"></i>How to Stay Safe:
+                </div>
+                {% for defense in defenses %}
+                <div class="d-flex gap-2 mb-1">
+                  <i class="fas fa-check-circle mt-1 check-pass" style="font-size:0.75rem;flex-shrink:0"></i>
+                  <span class="small">{{ defense }}</span>
+                </div>
+                {% endfor %}
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+
+    <!-- Warning Signs Your Phone is Hacked -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Warning Signs Your Phone May Be Hacked
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% for icon, color, sign, detail in [
+            ('fa-battery-quarter', 'danger', 'Battery draining very fast', 'Spyware or malware running in background consumes battery'),
+            ('fa-temperature-high', 'warning', 'Phone gets hot without use', 'Background processes sending your data to attacker'),
+            ('fa-wifi', 'warning', 'High data usage unexpectedly', 'Malware uploading your files, photos, messages to remote server'),
+            ('fa-mobile-screen', 'danger', 'Screen lights up randomly', 'Remote access tool activating your phone remotely'),
+            ('fa-microphone', 'danger', 'Strange sounds during calls', 'Call interception or recording in progress'),
+            ('fa-app-store', 'warning', 'Unknown apps installed', 'Malware or spyware installed without your knowledge'),
+            ('fa-envelope', 'danger', 'Contacts receiving strange messages from you', 'Your account compromised and sending spam/phishing'),
+            ('fa-lock-open', 'danger', 'Accounts logged out suddenly', 'Attacker logged in from another device, forcing you out'),
+          ] %}
+          <div class="col-md-6">
+            <div class="d-flex gap-3 p-3 rounded-2" style="background:var(--bg-secondary);border:1px solid var(--border-color)">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,71,87,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="fas {{ icon }}" style="color:var(--accent-{{ color }})"></i>
+              </div>
+              <div>
+                <div class="small fw-semibold">{{ sign }}</div>
+                <div class="text-muted" style="font-size:0.75rem">{{ detail }}</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- What to Do If Hacked -->
+    <div class="card">
+      <div class="card-header">
+        <i class="fas fa-kit-medical me-2 text-success"></i>What to Do If Your Phone is Hacked
+      </div>
+      <div class="card-body">
+        {% for num, icon, color, title, action in [
+          ('1','fa-plane-slash','danger','Immediately go Offline','Turn on Airplane Mode to stop data transmission to the attacker right now.'),
+          ('2','fa-lock','warning','Change All Passwords','From a DIFFERENT device, change passwords for email, banking, social media, and UPI apps.'),
+          ('3','fa-phone','success','Call Your Bank','Call your bank immediately to freeze your account if you suspect banking compromise.'),
+          ('4','fa-trash','danger','Uninstall Suspicious Apps','Remove any app you don\'t recognize. Check Settings → Apps → look for unknown apps.'),
+          ('5','fa-rotate','warning','Factory Reset Your Phone','If you suspect deep infection, backup important data and do a complete factory reset.'),
+          ('6','fa-flag','info','Report to Cyber Crime','File a complaint at cybercrime.gov.in or call 1930 helpline immediately.'),
+          ('7','fa-shield','success','Enable Security Features','After reset: enable screen lock, 2FA on all accounts, install only trusted apps.'),
+        ] %}
+        <div class="d-flex gap-3 mb-4">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(79,142,247,0.15);border:2px solid rgba(79,142,247,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;color:var(--accent-primary);font-size:0.9rem">
+            {{ num }}
+          </div>
+          <div>
+            <div class="fw-semibold mb-1"><i class="fas {{ icon }} me-2 text-{{ color }}"></i>{{ title }}</div>
+            <p class="text-muted small mb-0">{{ action }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col-lg-4">
+
+    <!-- Quick Stats -->
+    <div class="card mb-4" style="background:linear-gradient(135deg,rgba(255,71,87,0.1),rgba(165,94,234,0.08));border-color:rgba(255,71,87,0.25)">
+      <div class="card-body text-center py-4">
+        <i class="fas fa-chart-line fa-2x mb-3" style="color:var(--accent-danger)"></i>
+        <h5 class="fw-bold mb-3">Phone Hacking — Key Facts</h5>
+        <div class="row g-2">
+          {% for stat, label in [
+            ('83%', 'of phishing attacks now target mobile users'),
+            ('1930', 'India cyber crime helpline number'),
+            ('₹1.25L Cr', 'lost to cyber fraud in India (2023)'),
+            ('60 sec', 'time to steal data via juice jacking'),
+          ] %}
+          <div class="col-6">
+            <div class="p-2 rounded-2" style="background:var(--bg-card);border:1px solid var(--border-color)">
+              <div class="fw-bold fs-5" style="color:var(--accent-danger)">{{ stat }}</div>
+              <div class="text-muted" style="font-size:0.7rem">{{ label }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone Security Checklist -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-clipboard-check me-2 text-success"></i>Phone Security Checklist</div>
+      <div class="card-body p-0">
+        {% for tip in [
+          ('Screen lock with strong PIN/biometric', True),
+          ('Auto screen lock after 30 seconds', True),
+          ('Google Play Protect enabled', True),
+          ('2FA on all important accounts', True),
+          ('Bluetooth OFF when not in use', True),
+          ('Location OFF when not needed', True),
+          ('App permissions reviewed regularly', True),
+          ('Phone OS always updated', True),
+          ('No APK installs from unknown sources', True),
+          ('VPN used on public Wi-Fi', True),
+          ('No public USB charging ports used', True),
+          ('SIM PIN lock enabled', True),
+        ] %}
+        <div class="check-item px-4" style="padding:9px 16px">
+          <i class="fas fa-check-circle check-pass" style="flex-shrink:0;font-size:0.85rem"></i>
+          <span class="small">{{ tip[0] }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Android vs iOS Security -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-mobile me-2 text-info"></i>Android vs iOS Security</div>
+      <div class="card-body p-0">
+        <div class="p-3" style="border-bottom:1px solid var(--border-color)">
+          <div class="fw-semibold small mb-2" style="color:#3ddc84"><i class="fab fa-android me-2"></i>Android</div>
+          <div class="d-flex gap-2 mb-1"><i class="fas fa-times-circle check-fail" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">More vulnerable — allows APK sideloading</span></div>
+          <div class="d-flex gap-2 mb-1"><i class="fas fa-times-circle check-fail" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">Fragmented OS updates (many old versions)</span></div>
+          <div class="d-flex gap-2 mb-1"><i class="fas fa-check-circle check-pass" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">Google Play Protect scans apps</span></div>
+          <div class="d-flex gap-2"><i class="fas fa-check-circle check-pass" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">More customizable security settings</span></div>
+        </div>
+        <div class="p-3">
+          <div class="fw-semibold small mb-2" style="color:#aaaaaa"><i class="fab fa-apple me-2"></i>iOS (iPhone)</div>
+          <div class="d-flex gap-2 mb-1"><i class="fas fa-check-circle check-pass" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">Closed ecosystem — no APK sideloading</span></div>
+          <div class="d-flex gap-2 mb-1"><i class="fas fa-check-circle check-pass" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">Faster security updates for all devices</span></div>
+          <div class="d-flex gap-2 mb-1"><i class="fas fa-times-circle check-fail" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">Jailbroken iPhones are very vulnerable</span></div>
+          <div class="d-flex gap-2"><i class="fas fa-times-circle check-fail" style="font-size:0.75rem;flex-shrink:0;margin-top:2px"></i><span class="small text-muted">Spyware like Pegasus can still target iOS</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Links -->
+    <div class="card">
+      <div class="card-header"><i class="fas fa-flag me-2 text-danger"></i>Report Phone Hacking</div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer"
+           class="btn btn-outline-danger w-100">
+          <i class="fas fa-external-link-alt me-2"></i>cybercrime.gov.in
+        </a>
+        <a href="tel:1930" class="btn btn-outline-success w-100">
+          <i class="fas fa-phone me-2"></i>Call 1930 Helpline
+        </a>
+        <a href="{{ url_for('training.cybercrime') }}" class="btn btn-outline-primary w-100">
+          <i class="fas fa-gavel me-2"></i>Cyber Crime Portal
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

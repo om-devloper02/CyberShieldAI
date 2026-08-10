@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card animate__animated animate__fadeInUp">
+    <a href="{{ url_for('index') }}" class="auth-close-btn" aria-label="Close and go to home" title="Back to Home">
+      <i class="fas fa-times"></i>
+    </a>
+    <div class="auth-logo">
+      <i class="fas fa-shield-halved"></i>
+      <h1>Create Free Account</h1>
+      <p>Get instant access to all security tools</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Full Name</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+          <input type="text" name="full_name" class="form-control" placeholder="Your full name">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">
+          Username <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-user"></i></span>
+          <input type="text" name="username" class="form-control"
+            placeholder="Choose a username" required minlength="3">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">
+          Email <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+          <input type="email" name="email" class="form-control"
+            placeholder="your@email.com" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">
+          Password <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-lock"></i></span>
+          <input type="password" name="password" id="regPassword"
+            class="form-control" placeholder="Min 8 characters" required minlength="8">
+          <button type="button" class="input-group-text" id="toggleRegPwd">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-semibold">
+          Confirm Password <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-lock"></i></span>
+          <input type="password" name="confirm_password" class="form-control"
+            placeholder="Repeat password" required>
+        </div>
+      </div>
+
+      <div class="auth-actions">
+        <button type="submit" class="btn btn-scan">
+          <i class="fas fa-rocket me-2"></i>Create Free Account
+        </button>
+        <p class="auth-switch-text mb-0">Already have an account?</p>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-auth-outline">
+          <i class="fas fa-sign-in-alt me-2"></i>Login
+        </a>
+      </div>
+
+      <div class="text-center mt-3">
+        <span class="small text-muted">
+          <i class="fas fa-check-circle text-success me-1"></i>Easy signup &nbsp;|&nbsp;
+          <i class="fas fa-check-circle text-success me-1"></i>All tools free &nbsp;|&nbsp;
+          <i class="fas fa-check-circle text-success me-1"></i>Instant access
+        </span>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('toggleRegPwd').addEventListener('click', function() {
+  const inp = document.getElementById('regPassword');
+  const icon = this.querySelector('i');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+});
+</script>
+{% endblock %}

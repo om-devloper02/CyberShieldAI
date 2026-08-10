@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, pagination, empty_state %}
+{% block title %}Manage Threats{% endblock %}
+{% block page_title %}Threat Database{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Admin', url_for('admin.index')), ('Threats', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h5 class="fw-bold mb-1">Threat Database</h5>
+    <p class="text-muted small mb-0">Manage threat intelligence entries</p>
+  </div>
+  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addThreatModal">
+    <i class="fas fa-plus me-1"></i>Add Threat
+  </button>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Name</th><th>Category</th><th>Severity</th><th>MITRE</th><th>Source</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for t in threats.items %}
+          <tr id="threat-{{ t.id }}">
+            <td class="fw-semibold small">{{ t.name }}</td>
+            <td><span class="badge bg-secondary">{{ t.category.name if t.category else '-' }}</span></td>
+            <td>
+              <span class="badge {% if t.severity == 'critical' %}bg-danger{% elif t.severity == 'high' %}bg-warning text-dark{% elif t.severity == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                {{ t.severity or 'unknown' }}
+              </span>
+            </td>
+            <td><code class="small">{{ t.mitre_technique or '-' }}</code></td>
+            <td class="small text-muted">{{ t.source or '-' }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger delete-threat" data-id="{{ t.id }}"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">{{ empty_state('fa-radiation', 'No threats', 'Add threats to the intelligence database.') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">{{ pagination(threats, 'admin.threats') }}</div>
+</div>
+
+<div class="modal fade" id="addThreatModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content cs-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-plus me-2 text-danger"></i>Add Threat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addThreatForm">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Threat Name</label>
+              <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Severity</label>
+              <select name="severity" class="form-select">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              <select name="category_id" class="form-select">
+                {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">MITRE Technique</label>
+              <input type="text" name="mitre_technique" class="form-control" placeholder="T1566">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <textarea name="description" class="form-control" rows="3"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="saveThreatBtn"><i class="fas fa-save me-2"></i>Save Threat</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('saveThreatBtn').addEventListener('click', async () => {
+  const form = document.getElementById('addThreatForm');
+  const data = Object.fromEntries(new FormData(form));
+  try {
+    await CyberShield.apiPost('/admin/threats/add', data);
+    CyberShield.showToast('Threat added successfully', 'success');
+    bootstrap.Modal.getInstance(document.getElementById('addThreatModal')).hide();
+    setTimeout(() => location.reload(), 1000);
+  } catch(e) { CyberShield.showToast(e.message, 'danger'); }
+});
+
+document.querySelectorAll('.delete-threat').forEach(btn => {
+  btn.addEventListener('click', () => {
+    CyberShield.confirmAction('Delete Threat', 'Remove this threat from the database?', async () => {
+      await fetch(`/admin/threats/${btn.dataset.id}/delete`, { method: 'DELETE' });
+      document.getElementById('threat-' + btn.dataset.id)?.remove();
+      CyberShield.showToast('Threat deleted', 'success');
+    });
+  });
+});
+</script>
+{% endblock %}

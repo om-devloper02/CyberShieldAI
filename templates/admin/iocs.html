@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, pagination, empty_state %}
+{% block title %}Manage IOCs{% endblock %}
+{% block page_title %}IOC Database{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Admin', url_for('admin.index')), ('IOCs', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <h5 class="fw-bold mb-0">Indicators of Compromise</h5>
+  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addIocModal">
+    <i class="fas fa-plus me-1"></i>Add IOC
+  </button>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Type</th><th>Value</th><th>Threat</th><th>Confidence</th><th>Source</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for ioc in iocs.items %}
+          <tr>
+            <td><span class="badge bg-danger bg-opacity-10 text-danger">{{ ioc.type }}</span></td>
+            <td><code class="small">{{ ioc.value[:60] }}{% if ioc.value|length > 60 %}...{% endif %}</code></td>
+            <td class="small">{{ ioc.threat_name or '-' }}</td>
+            <td>
+              <div class="progress" style="height:6px;width:80px">
+                <div class="progress-bar bg-{{ 'danger' if ioc.confidence > 70 else 'warning' if ioc.confidence > 40 else 'success' }}" style="width:{{ ioc.confidence }}%"></div>
+              </div>
+              <span class="small text-muted">{{ ioc.confidence }}%</span>
+            </td>
+            <td class="small text-muted">{{ ioc.source or '-' }}</td>
+            <td class="text-muted small">{{ ioc.created_at.strftime('%b %d, %Y') }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">{{ empty_state('fa-fingerprint', 'No IOCs', 'Add indicators of compromise to the database.') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">{{ pagination(iocs, 'admin.iocs') }}</div>
+</div>
+
+<div class="modal fade" id="addIocModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cs-modal">
+      <div class="modal-header"><h5 class="modal-title">Add IOC</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="addIocForm">
+          <div class="mb-3">
+            <label class="form-label">Type</label>
+            <select name="type" class="form-select">
+              <option value="ip">IP Address</option>
+              <option value="domain">Domain</option>
+              <option value="url">URL</option>
+              <option value="hash">File Hash</option>
+              <option value="email">Email</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Value</label>
+            <input type="text" name="value" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Threat Name</label>
+            <input type="text" name="threat_name" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confidence (0-100)</label>
+            <input type="number" name="confidence" class="form-control" value="50" min="0" max="100">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="saveIocBtn">Save IOC</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('saveIocBtn').addEventListener('click', async () => {
+  const data = Object.fromEntries(new FormData(document.getElementById('addIocForm')));
+  try {
+    await CyberShield.apiPost('/admin/iocs/add', data);
+    CyberShield.showToast('IOC added', 'success');
+    bootstrap.Modal.getInstance(document.getElementById('addIocModal')).hide();
+    setTimeout(() => location.reload(), 1000);
+  } catch(e) { CyberShield.showToast(e.message, 'danger'); }
+});
+</script>
+{% endblock %}

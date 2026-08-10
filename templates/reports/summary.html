@@ -1,0 +1,61 @@
+<div class="row g-4 fade-in-up">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card primary">
+      <div class="stat-value">{{ report.total_scans }}</div>
+      <div class="stat-label">Total Scans ({{ report.period_days }}d)</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card warning">
+      <div class="stat-value">{{ report.avg_risk_score }}</div>
+      <div class="stat-label">Avg Risk Score</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card danger">
+      <div class="stat-value">{{ report.by_risk.dangerous or 0 }}</div>
+      <div class="stat-label">Dangerous</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card success">
+      <div class="stat-value">{{ report.by_risk.safe or 0 }}</div>
+      <div class="stat-label">Safe</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mt-2">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Scan Types</div>
+      <div class="card-body">
+        {% for type, count in report.by_type.items() %}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small text-capitalize">{{ type }}</span>
+          <div class="d-flex align-items-center gap-2">
+            <div class="progress" style="width:100px;height:6px">
+              <div class="progress-bar bg-primary" style="width:{{ (count / report.total_scans * 100) if report.total_scans else 0 }}%"></div>
+            </div>
+            <span class="small fw-semibold">{{ count }}</span>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No scan data for this period.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-lightbulb me-2 text-warning"></i>Recommendations</div>
+      <div class="card-body p-0">
+        {% for rec in report.recommendations %}
+        <div class="check-item px-4"><i class="fas fa-arrow-right check-pass"></i><span class="small">{{ rec }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="text-muted small mt-3 mb-0">Generated for {{ report.user }} on {{ report.generated_at }}</p>

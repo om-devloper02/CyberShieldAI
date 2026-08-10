@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Platform Analytics{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Admin', url_for('admin.index')), ('Analytics', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-chart-line me-2 text-primary"></i>Scans — Last 30 Days</div>
+      <div class="card-body" style="min-height:300px">
+        <canvas id="analyticsChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-info-circle me-2 text-info"></i>Summary</div>
+      <div class="card-body">
+        {% set total = scans_by_day | map('last') | sum if scans_by_day else 0 %}
+        <div class="profile-stat mb-3">
+          <div class="profile-stat-value text-primary">{{ total }}</div>
+          <div class="profile-stat-label">Total Scans (30d)</div>
+        </div>
+        <div class="profile-stat mb-3">
+          <div class="profile-stat-value text-success">{{ scans_by_day | length }}</div>
+          <div class="profile-stat-label">Active Days</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value text-warning">{{ (total / 30) | round(1) if total else 0 }}</div>
+          <div class="profile-stat-label">Avg Scans/Day</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Daily Breakdown</div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>Date</th><th>Scans</th><th>Activity</th></tr></thead>
+        <tbody>
+          {% for day, count in scans_by_day %}
+          <tr>
+            <td class="small">{{ day }}</td>
+            <td class="fw-semibold">{{ count }}</td>
+            <td><div class="progress" style="height:6px"><div class="progress-bar bg-primary" style="width:{{ (count * 100 / total) if total else 0 }}%"></div></div></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="text-center text-muted py-4">No scan data available yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const scanData = {{ scans_by_day | map('list') | list | tojson }};
+if (scanData.length) {
+  new Chart(document.getElementById('analyticsChart'), {
+    type: 'line',
+    data: {
+      labels: scanData.map(d => d[0]),
+      datasets: [{ label: 'Scans', data: scanData.map(d => d[1]), borderColor: '#4f8ef7', backgroundColor: 'rgba(79,142,247,0.1)', fill: true, tension: 0.4 }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#888' }, grid: { display: false } }, y: { ticks: { color: '#888' }, grid: { color: '#2a2a4a' } } } }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb %}
+{% block title %}Threat: {{ threat_type }}{% endblock %}
+{% block page_title %}Threat Explanation{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Threat Intel', url_for('threat.index')), (threat_type, '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-radiation me-2 text-danger"></i>{{ explanation.title or threat_type }}
+      </div>
+      <div class="card-body">
+        <p style="line-height:1.8">{{ explanation.description or explanation.summary or 'No detailed explanation available.' }}</p>
+        {% if explanation.how_it_works %}
+        <h6 class="fw-bold mt-4 mb-3"><i class="fas fa-cogs me-2 text-primary"></i>How It Works</h6>
+        <p class="text-muted">{{ explanation.how_it_works }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% if explanation.mitigations %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-shield-halved me-2 text-success"></i>Mitigations</div>
+      <div class="card-body p-0">
+        {% for m in explanation.mitigations %}
+        <div class="check-item px-4"><i class="fas fa-check-circle check-pass"></i><span class="small">{{ m }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-4">
+    <div class="card mb-4">
+      <div class="card-header">Threat Details</div>
+      <div class="card-body p-0">
+        {% if explanation.severity %}
+        <div class="check-item px-4"><span class="text-muted small">Severity</span><span class="ms-auto badge bg-danger">{{ explanation.severity }}</span></div>
+        {% endif %}
+        {% if explanation.mitre_id %}
+        <div class="check-item px-4"><span class="text-muted small">MITRE ID</span><code class="ms-auto small">{{ explanation.mitre_id }}</code></div>
+        {% endif %}
+        {% if explanation.category %}
+        <div class="check-item px-4"><span class="text-muted small">Category</span><span class="ms-auto badge bg-secondary">{{ explanation.category }}</span></div>
+        {% endif %}
+      </div>
+    </div>
+    <a href="{{ url_for('threat.index') }}" class="btn btn-outline-primary w-100"><i class="fas fa-arrow-left me-2"></i>Back to Threat Intel</a>
+  </div>
+</div>
+{% endblock %}

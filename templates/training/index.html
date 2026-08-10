@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Cyber Security Training{% endblock %}
+{% block page_title %}Security Training & Certification{% endblock %}
+{% block content %}
+<div class="row g-4">
+  {% if today_challenge %}
+  <div class="col-12">
+    <div class="card" style="background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(165,94,234,0.15));border-color:rgba(79,142,247,0.3)">
+      <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <span class="badge bg-warning text-dark mb-2"><i class="fas fa-fire me-1"></i>Daily Challenge</span>
+          <h5 class="mb-1">{{ today_challenge.title }}</h5>
+          <p class="text-muted small mb-0">{{ today_challenge.description }}</p>
+        </div>
+        <div class="text-end">
+          <div class="fw-bold text-warning fs-4">+{{ today_challenge.points }} pts</div>
+          <button class="btn btn-primary btn-sm mt-1">Take Challenge</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0"><i class="fas fa-book me-2 text-primary"></i>Training Modules</h5>
+      <a href="{{ url_for('training.leaderboard') }}" class="btn btn-sm btn-outline-warning">
+        <i class="fas fa-trophy me-1"></i>Leaderboard
+      </a>
+    </div>
+    <div class="row g-4">
+      {% for module in modules %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="sim-card" onclick="window.location='{{ url_for('training.module', module_id=module.id) }}'">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="sim-icon" style="background:rgba(79,142,247,0.1);width:48px;height:48px;font-size:1.2rem;margin-bottom:0">
+              <i class="fas {{ module.icon or 'fa-book' }} text-primary"></i>
+            </div>
+            {% if module.id in completed %}
+            <span class="badge bg-success"><i class="fas fa-check me-1"></i>Completed</span>
+            {% else %}
+            <span class="badge" style="background:rgba(255,165,2,0.15);color:var(--accent-warning)">{{ module.difficulty | title }}</span>
+            {% endif %}
+          </div>
+          <h6 class="fw-bold mb-1">{{ module.title }}</h6>
+          <p class="small text-muted mb-3">{{ module.description }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="small text-muted"><i class="fas fa-clock me-1"></i>{{ module.duration_minutes }} min</span>
+            <span class="badge bg-primary bg-opacity-10 text-primary">Start <i class="fas fa-arrow-right ms-1"></i></span>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center text-muted py-5">
+        <i class="fas fa-book fa-3x mb-3 d-block opacity-25"></i>
+        No training modules available yet. Check back soon!
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

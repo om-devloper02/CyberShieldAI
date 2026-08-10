@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, empty_state %}
+{% block title %}My Certificates{% endblock %}
+{% block page_title %}My Certificates{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Training', url_for('training.index')), ('Certificates', '#')]) }}{% endblock %}
+{% block content %}
+
+{% if certificates %}
+<div class="row g-4">
+  {% for cert in certificates %}
+  <div class="col-md-6 col-lg-4">
+    <div class="certificate-card">
+      <i class="fas fa-certificate fa-3x text-warning mb-3"></i>
+      <h5 class="fw-bold mb-1">{{ cert.module.title if cert.module else 'Training Module' }}</h5>
+      <p class="text-muted small mb-3">Issued {{ cert.issued_at.strftime('%B %d, %Y') }}</p>
+      <code class="small d-block mb-3" style="font-size:0.7rem">{{ cert.certificate_id }}</code>
+      <a href="{{ url_for('training.view_certificate', cert_id=cert.certificate_id) }}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-eye me-1"></i>View Certificate
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body">{{ empty_state('fa-certificate', 'No certificates yet', 'Complete training modules with 70%+ quiz score to earn certificates.', url_for('training.index'), 'Start Training') }}</div>
+</div>
+{% endif %}
+{% endblock %}

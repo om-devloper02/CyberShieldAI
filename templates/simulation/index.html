@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Attack Simulator{% endblock %}
+{% block page_title %}Safe Cyber Attack Simulator{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <div class="alert" style="background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.3);border-radius:12px">
+    <i class="fas fa-shield-halved me-2 text-primary"></i>
+    <strong>Educational Environment Only.</strong> All simulations are safe, controlled demos. No real attacks are performed.
+  </div>
+</div>
+
+<!-- Phone Hacking Featured Card -->
+<div class="card mb-4" style="background:linear-gradient(135deg,rgba(165,94,234,0.15),rgba(79,142,247,0.1));border-color:rgba(165,94,234,0.35)">
+  <div class="card-body d-flex align-items-center gap-4 flex-wrap py-3">
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(165,94,234,0.15);border:2px solid rgba(165,94,234,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i class="fas fa-mobile-screen-button fa-lg" style="color:var(--accent-purple)"></i>
+    </div>
+    <div class="flex-grow-1">
+      <div class="fw-bold mb-1">📱 How Phones Get Hacked — Complete Guide</div>
+      <p class="text-muted small mb-0">Learn 10 real attack methods (Public Wi-Fi, SIM Swap, Smishing, Juice Jacking...) and how to protect yourself.</p>
+    </div>
+    <a href="{{ url_for('simulation.phone_hacking') }}" class="btn px-4 fw-bold" style="background:var(--accent-purple);color:#fff;border:none;white-space:nowrap">
+      <i class="fas fa-arrow-right me-2"></i>Explore
+    </a>
+  </div>
+</div>
+
+<div class="row g-4 stagger">
+  {% set sim_configs = {
+    'sql_injection': ('fa-database', 'SQL Injection', 'Malicious SQL inserted into queries', 'danger'),
+    'xss': ('fa-code', 'Cross-Site Scripting', 'Scripts injected into web pages', 'warning'),
+    'csrf': ('fa-share-nodes', 'CSRF Attack', 'Forged cross-site requests', 'info'),
+    'brute_force': ('fa-key', 'Brute Force Attack', 'Password cracking simulation', 'orange'),
+    'mitm': ('fa-arrows-left-right', 'Man-in-the-Middle', 'Network interception visualization', 'purple'),
+    'phishing': ('fa-fish', 'Phishing Demo', 'Fake login page demonstration', 'danger'),
+    'dns_spoofing': ('fa-server', 'DNS Spoofing', 'DNS cache poisoning visualization', 'warning'),
+    'ddos': ('fa-bolt', 'DDoS Attack', 'Traffic flood visualization', 'danger'),
+  } %}
+
+  {% for sim_type, (icon, title, desc, color) in sim_configs.items() %}
+  <div class="col-sm-6 col-lg-4 col-xl-3">
+    <a href="{{ url_for('simulation.demo', sim_type=sim_type) }}" class="sim-card text-decoration-none">
+      <div class="sim-icon" style="background:rgba(var(--bs-{{ color }}-rgb, 79,142,247), 0.15)">
+        <i class="fas {{ icon }}" style="color:var(--accent-{% if color == 'danger' %}danger{% elif color == 'warning' %}warning{% elif color == 'success' %}success{% else %}primary{% endif %})"></i>
+      </div>
+      <h5 class="fw-bold mb-1">{{ title }}</h5>
+      <p class="small text-muted mb-0">{{ desc }}</p>
+      <div class="mt-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary">View Demo <i class="fas fa-arrow-right ms-1"></i></span>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<h6 class="fw-bold mb-3 mt-2" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-size:0.75rem">
+  <i class="fas fa-fish me-2"></i>Phishing Page Demos
+</h6>
+<div class="row g-3 mb-4">
+  {% for page_type, label, icon in [
+    ('login','Fake Login','fa-sign-in-alt'),('bank','Fake Bank','fa-university'),('social_media','Fake Social Media','fa-facebook'),
+    ('shopping','Fake Shopping','fa-shopping-cart'),('lottery','Lottery Scam','fa-trophy'),('courier','Courier Scam','fa-truck'),
+    ('investment','Investment Scam','fa-chart-line'),('crypto','Crypto Scam','fa-bitcoin'),('upi','UPI Scam','fa-mobile'),
+  ] %}
+  <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+    <a href="{{ url_for('simulation.phishing_page', page_type=page_type) }}" class="sim-card text-decoration-none text-center d-block" style="padding:16px">
+      <i class="fas {{ icon }} fa-lg text-danger mb-2 d-block"></i>
+      <span class="small fw-semibold">{{ label }}</span>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

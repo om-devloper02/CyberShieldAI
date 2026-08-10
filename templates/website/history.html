@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import breadcrumb, pagination, empty_state, risk_badge %}
+{% block title %}Scan History{% endblock %}
+{% block page_title %}Website Scan History{% endblock %}
+{% block breadcrumb %}{{ breadcrumb([('Website Scanner', url_for('website.index')), ('History', '#')]) }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h5 class="fw-bold mb-1">Scan History</h5>
+    <p class="text-muted small mb-0">{{ scans.total }} website scans recorded</p>
+  </div>
+  <a href="{{ url_for('website.index') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>New Scan</a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>URL</th><th>Risk Level</th><th>Score</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for scan in scans.items %}
+          <tr>
+            <td class="small text-truncate" style="max-width:250px">{{ scan.input_data or '-' }}</td>
+            <td>{{ risk_badge(scan.risk_level) }}</td>
+            <td class="fw-semibold small">{{ scan.risk_score | int }}/100</td>
+            <td class="text-muted small">{{ scan.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+            <td>
+              <a href="{{ url_for('website.result', scan_id=scan.id) }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5">{{ empty_state('fa-globe', 'No scans yet', 'Start scanning URLs to build your history.', url_for('website.index'), 'Scan URL') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer">{{ pagination(scans, 'website.history') }}</div>
+</div>
+{% endblock %}
