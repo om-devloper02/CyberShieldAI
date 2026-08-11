@@ -14,7 +14,6 @@
 
 CyberShield AI is a complete, production-ready cyber security platform built with Python Flask. It helps students, researchers, and organizations understand cyber attacks through safe simulations, detect phishing threats, analyze security risks, and improve their cyber hygiene.
 
-Screenshot 2026-08-10 172239.png
 
 ## ✨ Features
 
